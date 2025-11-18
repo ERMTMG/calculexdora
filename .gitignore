@@ -1,0 +1,4 @@
+bin/*
+obj/*
+# Archivo para el analizador de clangd
+.clangd
