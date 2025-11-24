@@ -15,7 +15,9 @@ enum class TokenType {
     OP_ASTERISK, // "*"
     OP_SLASH,    // "/"
     OP_CARET,    // "^"
-    ASSIGN       // "="  
+    ASSIGN,      // "="  
+    PAREN_L,     // "("
+    PAREN_R,     // ")"
 };
 
 class Token {
@@ -36,6 +38,8 @@ class Token {
     std::optional<double> get_num() const noexcept;
     std::optional<std::string> get_ident() const noexcept;
     TokenType type() const noexcept;
+    bool is_operator_token() const noexcept;
+    bool is_operand_token() const noexcept;
     bool operator==(const Token& rhs) const noexcept;
     bool operator!=(const Token& rhs) const noexcept;
     friend std::ostream& operator<<(std::ostream& out, const Token& tok) noexcept;

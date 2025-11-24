@@ -68,6 +68,20 @@ bool Token::operator!=(const Token& rhs) const noexcept {
     return !(*this == rhs);
 }
 
+bool Token::is_operator_token() const noexcept {
+    return (
+        m_type == TokenType::OP_PLUS 
+     || m_type == TokenType::OP_MINUS
+     || m_type == TokenType::OP_ASTERISK
+     || m_type == TokenType::OP_SLASH
+     || m_type == TokenType::OP_CARET
+    );
+}
+
+bool Token::is_operand_token() const noexcept {
+    return (m_type == TokenType::NUMBER || m_type == TokenType::IDENTIFIER);
+}
+
 std::ostream& operator<<(std::ostream& out, const Token& tok) noexcept {
     switch(tok.m_type) {
       case TokenType::ERROR_TOKEN: {
@@ -96,6 +110,15 @@ std::ostream& operator<<(std::ostream& out, const Token& tok) noexcept {
       }
       case TokenType::OP_CARET: {
         return out << "<Caret>";
+      }
+      case TokenType::ASSIGN: {
+        return out << "<Assign>";
+      }
+      case TokenType::PAREN_L: {
+        return out << "<Left Parenthesis>";
+      }
+      case TokenType::PAREN_R: {
+        return out << "<Right Parenthesis>";
       }
       default: {
         return out << "<Invalid token type>";
