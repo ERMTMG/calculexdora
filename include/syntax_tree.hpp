@@ -1,3 +1,4 @@
+#pragma once
 #include "tokens.hpp"
 #include <memory>
 #include <ostream>
@@ -19,6 +20,8 @@ class OperandExpression {
     //...
     friend std::ostream& operator<<(std::ostream& out, const OperandExpression& expr);
 };
+
+std::ostream& operator<<(std::ostream& out, const OperandExpression& expr);
     
 class BinOpExpression {
   private:
@@ -31,6 +34,8 @@ class BinOpExpression {
     friend std::ostream& operator<<(std::ostream& out, const BinOpExpression& expr);
 };
 
+std::ostream& operator<<(std::ostream& out, const BinOpExpression& expr);
+
 class Expression {
   private:
     union {
@@ -38,14 +43,18 @@ class Expression {
         BinOpExpression m_bin_op;
     };
     ExpressionType m_type;  
-    Expression(OperandExpression operand);
-    Expression(BinOpExpression bin_op);
-    Expression();
-  public:  
+    Expression(OperandExpression&& operand) noexcept;
+    Expression(BinOpExpression&& bin_op) noexcept;
+    Expression() = delete;
+  public: 
+    ~Expression();
+    
     static Expression operand(Token&& tok);
     static Expression bin_op(Token&& oper, std::unique_ptr<Expression>&& lhs, std::unique_ptr<Expression>&& rhs);
     
     friend std::ostream& operator<<(std::ostream& out, const Expression& expr);
 };
+
+std::ostream& operator<<(std::ostream& out, const Expression& expr);
 
 }
