@@ -1,10 +1,13 @@
 #include "syntax_tree.hpp"
 #include "tokens.hpp"
+#include <cstdlib>
 #include <memory>
 #include <ostream>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <utility>
+#include <variant>
 
 namespace clex {
 
@@ -34,6 +37,61 @@ BinOpExpression::BinOpExpression(Token&& oper, std::unique_ptr<Expression>&& lhs
 
 std::ostream& operator<<(std::ostream& out, const BinOpExpression& expr) {
     return out << "<Bin-op " << *expr.m_lhs << ' ' << expr.m_operator << ' ' << *expr.m_rhs << '>';
+}
+
+Expression::Expression(BinOpExpression&& bin_op) noexcept : m_type(ExpressionType::BIN_OP), m_data(std::move(bin_op)) {};
+
+Expression::Expression(OperandExpression&& operand) noexcept : m_type(ExpressionType::BIN_OP), m_data(std::move(operand)) {};
+
+Expression Expression::bin_op(Token &&oper, std::unique_ptr<Expression> &&lhs, std::unique_ptr<Expression> &&rhs) {
+    return Expression(
+        BinOpExpression(
+            std::move(oper),
+            std::move(lhs),
+            std::move(rhs)
+        )
+    );
+}
+
+Expression Expression::operand(Token &&tok) {
+    return Expression(
+        OperandExpression(
+            std::move(tok)
+        )
+    );
+}
+
+ExpressionType Expression::type() const noexcept {
+    return m_type;
+}
+
+const Token& Expression::get_token() const noexcept {
+    auto visit_func = [](const auto& expr) -> const Token& {
+        if constexpr(std::is_same_v<decltype(expr), BinOpExpression>) {
+            return expr.m_operator;
+        } else if constexpr(std::is_same_v<decltype(expr), OperandExpression>) {
+            return expr.m_tok;
+        } else {
+            std::abort(); // no se puede llegar a esto, expr siempre será o BinOpExpression u OperandExpression
+        }
+    };
+    return std::visit(visit_func, m_data);
+}
+
+std::pair<const Expression&, const Expression&> Expression::get_operands() const {
+    if(m_type != ExpressionType::BIN_OP) {
+        throw new std::runtime_error("Can't get operands of a non-BinOp expression");
+    } else {
+        const auto& expr = std::get<BinOpExpression>(m_data);
+        return {*expr.m_lhs, *expr.m_rhs};
+    }
+}
+
+std::ostream& operator<<(std::ostream& out, const Expression& expr) {
+    auto visit_func = [&out](const auto& expr) -> std::ostream& {
+        return out << expr;
+    };
+    return std::visit(visit_func, expr.m_data);
 }
 
 }

@@ -2,6 +2,8 @@
 #include "tokens.hpp"
 #include <memory>
 #include <ostream>
+#include <utility>
+#include <variant>
 
 namespace clex {
 
@@ -18,6 +20,7 @@ class OperandExpression {
   public:
     OperandExpression(Token&& tok);
     //...
+    friend class Expression;
     friend std::ostream& operator<<(std::ostream& out, const OperandExpression& expr);
 };
 
@@ -31,6 +34,7 @@ class BinOpExpression {
   public:
     BinOpExpression(Token&& oper, std::unique_ptr<Expression>&& lhs, std::unique_ptr<Expression>&& rhs);
     //...
+    friend class Expression;
     friend std::ostream& operator<<(std::ostream& out, const BinOpExpression& expr);
 };
 
@@ -38,20 +42,19 @@ std::ostream& operator<<(std::ostream& out, const BinOpExpression& expr);
 
 class Expression {
   private:
-    union {
-        OperandExpression m_operand;
-        BinOpExpression m_bin_op;
-    };
+    std::variant<BinOpExpression, OperandExpression> m_data;
     ExpressionType m_type;  
     Expression(OperandExpression&& operand) noexcept;
     Expression(BinOpExpression&& bin_op) noexcept;
     Expression() = delete;
   public: 
-    ~Expression();
-    
     static Expression operand(Token&& tok);
     static Expression bin_op(Token&& oper, std::unique_ptr<Expression>&& lhs, std::unique_ptr<Expression>&& rhs);
     
+    ExpressionType type() const noexcept;
+    const Token& get_token() const noexcept;
+    std::pair<const Expression&, const Expression&> get_operands() const;
+
     friend std::ostream& operator<<(std::ostream& out, const Expression& expr);
 };
 
