@@ -2,7 +2,6 @@
 #include <iostream>
 #include <optional>
 #include <string>
-#include <variant>
 
 namespace clex {
 
@@ -21,9 +20,9 @@ enum class TokenType {
 
 class Token {
   private:
+  std::string m_info;
     TokenType m_type;
-    std::variant<std::monostate, double, std::string> m_info;
-    Token(TokenType type, std::variant<std::monostate, double, std::string>&& info) noexcept;
+    Token(TokenType type, const std::string& info) noexcept;
   public:
     Token();
     Token(const Token&) = default;
@@ -32,12 +31,13 @@ class Token {
     Token& operator=(Token&&) = default;
 
     Token(TokenType type);
-    static Token from_number(double num) noexcept;
-    static Token from_ident(const std::string& str) noexcept;
+    static Token number(const std::string& num) noexcept;
+    static Token identifier(const std::string& str) noexcept;
     std::optional<double> get_num() const noexcept;
     std::optional<std::string> get_ident() const noexcept;
     TokenType type() const noexcept;
-    std::string to_string() const noexcept;
+    bool operator==(const Token& rhs) const noexcept;
+    bool operator!=(const Token& rhs) const noexcept;
     friend std::ostream& operator<<(std::ostream& out, const Token& tok) noexcept;
 };
 

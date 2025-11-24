@@ -1,48 +1,71 @@
 #include "tokens.hpp"
+#include <optional>
 #include <stdexcept>
-#include <variant>
+#include <string>
 
 namespace clex {
 
-Token::Token(TokenType type, std::variant<std::monostate, double, std::string>&& info) noexcept :
+Token::Token(TokenType type, const std::string& info) noexcept :
     m_type(type), m_info(info) {};
 
 Token::Token() : m_type(TokenType::ERROR_TOKEN), m_info() {};
+
 Token::Token(TokenType type) : m_type(type), m_info() {
     if(type == TokenType::NUMBER || type == TokenType::IDENTIFIER) {
         throw new std::invalid_argument("No token info provided for number/identifier token. Use Token::from_number() or Token::from_ident() instead");
     }
 }
 
-Token Token::from_ident(const std::string &str) noexcept {
-    return Token{
+Token Token::identifier(const std::string &str) noexcept {
+    return Token {
         TokenType::IDENTIFIER,
-        std::move(std::variant<std::monostate, double, std::string>{str})
+        std::move(str)
     };
 }
 
-Token Token::from_number(double num) noexcept {
-    return Token{
+Token Token::number(const std::string&  num) noexcept {
+    return Token {
         TokenType::NUMBER,
-        std::move(std::variant<std::monostate, double, std::string>{num})
+        num
     };
 }
 
 TokenType Token::type() const noexcept { return m_type; }
 std::optional<std::string> Token::get_ident() const noexcept {
-    if(std::holds_alternative<std::string>(m_info)) {
-        return std::get<std::string>(m_info);
+    if(m_type == TokenType::IDENTIFIER && !m_info.empty()) {
+        return m_info;
     } else {
         return {};
     }
 }
 
 std::optional<double> Token::get_num() const noexcept {
-    if(std::holds_alternative<double>(m_info)) {
-        return std::get<double>(m_info);
+    if(m_type == TokenType::NUMBER && !m_info.empty()) {
+        try {
+            return std::stod(m_info);
+        } catch(const std::invalid_argument& e) {
+            std::cerr << "ERROR: Token numérico con valor inválido\n"; // TODO: manejar este error mejor
+            return {};
+        }
     } else {
         return {};
     }
+}
+
+bool Token::operator==(const Token& rhs) const noexcept {
+    if(this->m_type != rhs.m_type) {
+        return false;
+    } else if(
+      this->m_type == TokenType::IDENTIFIER || this->m_type == TokenType::NUMBER 
+      && this->m_info != rhs.m_info
+    ) {
+        return false;
+    }
+    return true;
+}
+
+bool Token::operator!=(const Token& rhs) const noexcept {
+    return !(*this == rhs);
 }
 
 std::ostream& operator<<(std::ostream& out, const Token& tok) noexcept {
@@ -54,10 +77,10 @@ std::ostream& operator<<(std::ostream& out, const Token& tok) noexcept {
         return out << "<EOF>";
       }
       case TokenType::NUMBER: {
-        return out << "<Number " << std::get<double>(tok.m_info) << '>';
+        return out << "<Number " << tok.m_info << '>';
       }
       case TokenType::IDENTIFIER: {
-        return out << "<Identifier " << std::get<std::string>(tok.m_info) << '>';
+        return out << "<Identifier " << tok.m_info << '>';
       }
       case TokenType::OP_PLUS: {
         return out << "<Plus>";
