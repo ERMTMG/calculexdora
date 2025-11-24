@@ -15,7 +15,8 @@ enum class TokenType {
     OP_MINUS,    // "-"
     OP_ASTERISK, // "*"
     OP_SLASH,    // "/"
-    OP_CARET     // "^"
+    OP_CARET,    // "^"
+    ASSIGN       // "="  
 };
 
 class Token {
