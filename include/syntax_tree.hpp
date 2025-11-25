@@ -19,7 +19,8 @@ class OperandExpression {
     Token m_tok;
   public:
     OperandExpression(Token&& tok);
-    //...
+    const Token& get_token() const noexcept;
+
     friend class Expression;
     friend std::ostream& operator<<(std::ostream& out, const OperandExpression& expr);
 };
@@ -33,7 +34,8 @@ class BinOpExpression {
     std::unique_ptr<Expression> m_rhs;
   public:
     BinOpExpression(Token&& oper, std::unique_ptr<Expression>&& lhs, std::unique_ptr<Expression>&& rhs);
-    //...
+    const Token& get_operator() const noexcept;
+    std::pair<const Expression&, const Expression&> get_operands() const noexcept;
     friend class Expression;
     friend std::ostream& operator<<(std::ostream& out, const BinOpExpression& expr);
 };
@@ -53,7 +55,8 @@ class Expression {
     
     ExpressionType type() const noexcept;
     const Token& get_token() const noexcept;
-    std::pair<const Expression&, const Expression&> get_operands() const;
+    const OperandExpression& as_operand() const;
+    const BinOpExpression& as_bin_op() const;
 
     friend std::ostream& operator<<(std::ostream& out, const Expression& expr);
 };

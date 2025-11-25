@@ -17,6 +17,10 @@ OperandExpression::OperandExpression(Token&& tok) : m_tok(tok) {
     }
 };
 
+const Token& OperandExpression::get_token() const noexcept {
+    return m_tok;
+}
+
 std::ostream& operator<<(std::ostream& out, const OperandExpression& expr) {
     return out << "<Operand " << expr.m_tok << '>';
 }
@@ -35,13 +39,21 @@ BinOpExpression::BinOpExpression(Token&& oper, std::unique_ptr<Expression>&& lhs
     }
 }
 
+const Token& BinOpExpression::get_operator() const noexcept {
+    return m_operator;
+}
+
+std::pair<const Expression&, const Expression&> BinOpExpression::get_operands() const noexcept {
+    return {*m_lhs, *m_rhs};
+}
+
 std::ostream& operator<<(std::ostream& out, const BinOpExpression& expr) {
     return out << "<Bin-op " << *expr.m_lhs << ' ' << expr.m_operator << ' ' << *expr.m_rhs << '>';
 }
 
-Expression::Expression(BinOpExpression&& bin_op) noexcept : m_type(ExpressionType::BIN_OP), m_data(std::move(bin_op)) {};
+Expression::Expression(BinOpExpression&& bin_op) noexcept : m_data(std::move(bin_op)), m_type(ExpressionType::BIN_OP) {};
 
-Expression::Expression(OperandExpression&& operand) noexcept : m_type(ExpressionType::BIN_OP), m_data(std::move(operand)) {};
+Expression::Expression(OperandExpression&& operand) noexcept : m_data(std::move(operand)), m_type(ExpressionType::OPERAND) {};
 
 Expression Expression::bin_op(Token &&oper, std::unique_ptr<Expression> &&lhs, std::unique_ptr<Expression> &&rhs) {
     return Expression(
@@ -78,13 +90,12 @@ const Token& Expression::get_token() const noexcept {
     return std::visit(visit_func, m_data);
 }
 
-std::pair<const Expression&, const Expression&> Expression::get_operands() const {
-    if(m_type != ExpressionType::BIN_OP) {
-        throw new std::runtime_error("Can't get operands of a non-BinOp expression");
-    } else {
-        const auto& expr = std::get<BinOpExpression>(m_data);
-        return {*expr.m_lhs, *expr.m_rhs};
-    }
+const OperandExpression& Expression::as_operand() const {
+    return std::get<OperandExpression>(m_data);
+}
+
+const BinOpExpression& Expression::as_bin_op() const {
+    return std::get<BinOpExpression>(m_data);
 }
 
 std::ostream& operator<<(std::ostream& out, const Expression& expr) {
