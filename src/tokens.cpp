@@ -5,48 +5,73 @@
 
 namespace clex {
 
-Token::Token(TokenType type, const std::string& info) noexcept :
-    m_type(type), m_info(info) {};
+Token::Token(TokenType type, Token::TokenVariant&& data) noexcept :
+    m_data(data), m_type(type) {};
 
-Token::Token() : m_type(TokenType::ERROR_TOKEN), m_info() {};
+Token::Token() : m_data(), m_type(TokenType::ERROR_TOKEN) {};
 
-Token::Token(TokenType type) : m_type(type), m_info() {
+Token::Token(TokenType type) : m_data(), m_type(type) {
+    static const int PLUS_MINUS_BINDING_POWER = 1;
+    static const int TIMES_DIVIDE_BINDING_POWER = 2;
+    static const int EXPONENT_BINDING_POWER = 3;
     if(type == TokenType::NUMBER || type == TokenType::IDENTIFIER) {
         throw new std::invalid_argument("No token info provided for number/identifier token. Use Token::from_number() or Token::from_ident() instead");
+    } else {
+        switch (type) {
+          case TokenType::OP_PLUS:
+          case TokenType::OP_MINUS: {
+            m_data = PLUS_MINUS_BINDING_POWER;
+            break;
+          }
+          case TokenType::OP_ASTERISK:
+          case TokenType::OP_SLASH: {
+            m_data = TIMES_DIVIDE_BINDING_POWER;
+            break;
+          }
+          case TokenType::OP_CARET: {
+            m_data = EXPONENT_BINDING_POWER;
+            break;
+          }
+          default: break;
+        }
     }
 }
 
 Token Token::identifier(const std::string &str) noexcept {
     return Token {
         TokenType::IDENTIFIER,
-        std::move(str)
+        TokenVariant(str)
     };
 }
 
-Token Token::number(const std::string&  num) noexcept {
+Token Token::number(const std::string& num) noexcept {
     return Token {
         TokenType::NUMBER,
-        num
+        TokenVariant(std::stod(num))
     };
 }
 
 TokenType Token::type() const noexcept { return m_type; }
+
 std::optional<std::string> Token::get_ident() const noexcept {
-    if(m_type == TokenType::IDENTIFIER && !m_info.empty()) {
-        return m_info;
+    if(m_type == TokenType::IDENTIFIER) {
+        return std::get<std::string>(m_data);
     } else {
         return {};
     }
 }
 
 std::optional<double> Token::get_num() const noexcept {
-    if(m_type == TokenType::NUMBER && !m_info.empty()) {
-        try {
-            return std::stod(m_info);
-        } catch(const std::invalid_argument& e) {
-            std::cerr << "ERROR: Token numérico con valor inválido\n"; // TODO: manejar este error mejor
-            return {};
-        }
+    if(m_type == TokenType::NUMBER) {
+        return std::get<double>(m_data);
+    } else {
+        return {};
+    }
+}
+
+std::optional<int> Token::get_binding_power() const noexcept {
+    if(is_operand_token()) {
+        return std::get<int>(m_data);
     } else {
         return {};
     }
@@ -55,13 +80,19 @@ std::optional<double> Token::get_num() const noexcept {
 bool Token::operator==(const Token& rhs) const noexcept {
     if(this->m_type != rhs.m_type) {
         return false;
-    } else if(
-      this->m_type == TokenType::IDENTIFIER || this->m_type == TokenType::NUMBER 
-      && this->m_info != rhs.m_info
-    ) {
-        return false;
+    } else {
+        switch(m_type) {
+          case TokenType::IDENTIFIER: {
+            return std::get<std::string>(m_data) == std::get<std::string>(rhs.m_data);
+          }
+          case TokenType::NUMBER: {
+            return std::get<double>(m_data) == std::get<double>(rhs.m_data);
+          }
+          default: {
+            return true;
+          }
+        }
     }
-    return true;
 }
 
 bool Token::operator!=(const Token& rhs) const noexcept {
@@ -91,10 +122,10 @@ std::ostream& operator<<(std::ostream& out, const Token& tok) noexcept {
         return out << "<EOF>";
       }
       case TokenType::NUMBER: {
-        return out << "<Number " << tok.m_info << '>';
+        return out << "<Number " << std::get<double>(tok.m_data) << '>';
       }
       case TokenType::IDENTIFIER: {
-        return out << "<Identifier " << tok.m_info << '>';
+        return out << "<Identifier " << std::get<std::string>(tok.m_data) << '>';
       }
       case TokenType::OP_PLUS: {
         return out << "<Plus>";

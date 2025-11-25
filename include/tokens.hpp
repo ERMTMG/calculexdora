@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <optional>
+#include <variant>
 #include <string>
 
 namespace clex {
@@ -21,10 +22,12 @@ enum class TokenType {
 };
 
 class Token {
+  public:
+    using TokenVariant = std::variant<std::monostate, std::string, double, int>;
   private:
-  std::string m_info;
+    TokenVariant m_data;
     TokenType m_type;
-    Token(TokenType type, const std::string& info) noexcept;
+    Token(TokenType type, TokenVariant&& info) noexcept;
   public:
     Token();
     Token(const Token&) = default;
@@ -37,6 +40,7 @@ class Token {
     static Token identifier(const std::string& str) noexcept;
     std::optional<double> get_num() const noexcept;
     std::optional<std::string> get_ident() const noexcept;
+    std::optional<int> get_binding_power() const noexcept;
     TokenType type() const noexcept;
     bool is_operator_token() const noexcept;
     bool is_operand_token() const noexcept;
