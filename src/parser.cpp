@@ -1,12 +1,18 @@
 #include "parser.hpp"
 #include "syntax_tree.hpp"
+#include "token_list.hpp"
 #include "tokens.hpp"
 #include <memory>
 #include <utility>
+#include <vector>
 
 
 namespace clex {
     
+Parser::Parser(TokenList&& tokens) noexcept : m_tokens(tokens) {};
+
+Parser::Parser(std::vector<Token>&& tokens) noexcept : m_tokens(std::move(tokens)) {};
+
 std::unique_ptr<Expression> Parser::parse_expression() {
     Token first_tok = m_tokens.next();
     std::unique_ptr<Expression> lhs;
@@ -36,13 +42,13 @@ std::unique_ptr<Expression> Parser::parse_expression() {
       }
     }
 
-    Token last = m_tokens.next();
+    Token rhs_tok = m_tokens.next();
     std::unique_ptr<Expression> rhs;
-    switch(first_tok.type()) {
+    switch(rhs_tok.type()) {
       case TokenType::NUMBER:
       case TokenType::IDENTIFIER: {
         rhs = std::make_unique<Expression>(
-            Expression::operand(std::move(first_tok))
+            Expression::operand(std::move(rhs_tok))
         );
         break;
       }
