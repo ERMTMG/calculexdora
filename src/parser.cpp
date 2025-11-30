@@ -13,56 +13,61 @@ Parser::Parser(TokenList&& tokens) noexcept : m_tokens(tokens) {};
 
 Parser::Parser(std::vector<Token>&& tokens) noexcept : m_tokens(std::move(tokens)) {};
 
-std::unique_ptr<Expression> Parser::parse_expression() {
-    Token first_tok = m_tokens.next();
-    std::unique_ptr<Expression> lhs;
-    switch(first_tok.type()) {
+Token Parser::expect_operand_token() {
+    Token tok = m_tokens.next();
+    switch(tok.type()) {
       case TokenType::NUMBER:
-      case TokenType::IDENTIFIER: {
-        lhs = std::make_unique<Expression>(
-            Expression::operand(std::move(first_tok))
-        );
-        break;
-      }
+      case TokenType::IDENTIFIER: 
+        return tok;
       default:
-        throw "bad starting token"; // TODO: añadir errores como dios manda
+        std::cerr << "Expected operand and not " << tok;
+        throw "bad token, expected operand"; // TODO: añadir errores como dios manda
     }
+}
 
-    Token operator_tok = m_tokens.peek();
-    switch(operator_tok.type()) {
-      case TokenType::END_OF_FILE: {
-        return lhs; // Reached the end, no operation needed
-      } 
-      default: {
-        if(!operator_tok.is_operator_token()) {
-            throw "expected operator";
-        } else {
-            m_tokens.next(); // nos saltamos el token que ya sabemos que es un operador
-        }
-      }
-    }
-
-    Token rhs_tok = m_tokens.next();
-    std::unique_ptr<Expression> rhs;
-    switch(rhs_tok.type()) {
-      case TokenType::NUMBER:
-      case TokenType::IDENTIFIER: {
-        rhs = std::make_unique<Expression>(
-            Expression::operand(std::move(rhs_tok))
-        );
-        break;
-      }
-      default:
-        throw "bad rhs token";
-    }
-
-    return std::make_unique<Expression>(
-        Expression::bin_op(
-            std::move(operator_tok), 
-            std::move(lhs), 
-            std::move(rhs)
-        )
+std::unique_ptr<Expression> Parser::parse_expression_recursive(int minimal_binding_power) {
+    Token first_tok = expect_operand_token();
+    std::unique_ptr<Expression> lhs = std::make_unique<Expression>(
+        Expression::operand(std::move(first_tok))
     );
+
+    int current_binding_power = minimal_binding_power;
+
+    while(true) { // bucle infinito para seguir mirando por la derecha, que term
+        Token operator_tok = m_tokens.peek();
+        switch(operator_tok.type()) {
+        case TokenType::END_OF_FILE: {
+            return lhs; // Reached the end, no operation needed
+        } 
+        default: {
+            if(!operator_tok.is_operator_token()) {
+                std::cerr << "Expected operator and not " << operator_tok;
+                throw "expected operator";
+            }
+        }
+        }
+
+        current_binding_power = *operator_tok.get_binding_power();
+        if(current_binding_power <= minimal_binding_power) { // no seguimos haciendo binding hacia la derecha, terminamos el bucle y retornamos
+            return lhs;
+        }
+
+        m_tokens.next(); // nos saltamos el token que ya sabemos que es un operador
+
+        std::unique_ptr<Expression> rhs = parse_expression_recursive(current_binding_power); // hacemos recursión para comprobar si a la derecha hay una expresion compleja
+
+        lhs = std::make_unique<Expression>( // y recogemos todo lo que hemos hecho en lhs para seguir con la próxima iteración del bucle
+            Expression::bin_op(
+                std::move(operator_tok), 
+                std::move(lhs), 
+                std::move(rhs)
+            )
+        );
+    }
+}
+
+std::unique_ptr<Expression> Parser::parse_expression() {
+    return parse_expression_recursive(-1);
 }
 
 }
