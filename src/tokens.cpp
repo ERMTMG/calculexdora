@@ -70,7 +70,7 @@ std::optional<double> Token::get_num() const noexcept {
 }
 
 std::optional<int> Token::get_binding_power() const noexcept {
-    if(is_operand_token()) {
+    if(is_operator_token()) {
         return std::get<int>(m_data);
     } else {
         return {};
