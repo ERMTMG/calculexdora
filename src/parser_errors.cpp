@@ -18,7 +18,7 @@ void ParserError::print_to(std::ostream& out) const noexcept {
     out << "<GENERIC PARSER ERROR> " << this->what();
 }
 
-ExpectedToken::ExpectedToken(std::vector<Token>&& expected_tokens, Token actual_token) noexcept : ParserError("") {
+ExpectedToken::ExpectedToken(std::vector<TokenType>&& expected_tokens, Token actual_token) noexcept : ParserError("") {
     std::stringstream msg;
     if(expected_tokens.empty()) {
         std::cerr << "Invalid exception constructed";
@@ -28,8 +28,8 @@ ExpectedToken::ExpectedToken(std::vector<Token>&& expected_tokens, Token actual_
         msg << "Expected token " << expected_tokens[0] << ", ";
     } else {
         msg << "Expected one of ";
-        for(const Token& tok : expected_tokens) {
-            msg << tok << ", ";
+        for(TokenType& token_type : expected_tokens) {
+            msg << token_type << ", ";
         }
     }
     msg << "got " << actual_token << '\n';
@@ -43,11 +43,11 @@ void ExpectedToken::print_to(std::ostream& out) const noexcept {
 ExpectedOperator::ExpectedOperator(Token actual_token) noexcept : 
     ExpectedToken(
         {
-            Token(TokenType::OP_PLUS),
-            Token(TokenType::OP_MINUS),
-            Token(TokenType::OP_ASTERISK),
-            Token(TokenType::OP_SLASH),
-            Token(TokenType::OP_CARET),
+            TokenType::OP_PLUS,
+            TokenType::OP_MINUS,
+            TokenType::OP_ASTERISK,
+            TokenType::OP_SLASH,
+            TokenType::OP_CARET,
         }, 
         actual_token
     ) {};

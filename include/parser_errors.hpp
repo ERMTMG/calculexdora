@@ -17,7 +17,7 @@ class ParserError {
 
 class ExpectedToken : public ParserError {
   public:
-    ExpectedToken(std::vector<Token>&& expected_tokens, Token actual_token) noexcept;
+    ExpectedToken(std::vector<TokenType>&& expected_tokens, Token actual_token) noexcept;
     virtual void print_to(std::ostream& out) const noexcept override;
 };
 

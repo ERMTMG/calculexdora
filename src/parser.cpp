@@ -21,7 +21,7 @@ Token Parser::expect_operand_token() {
       case TokenType::IDENTIFIER: 
         return tok;
       default:
-        throw ExpectedToken({Token::identifier(""), Token::number("")}, tok);
+        throw ExpectedToken({TokenType::IDENTIFIER, TokenType::NUMBER}, tok);
     }
 }
 
