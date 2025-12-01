@@ -1,9 +1,54 @@
 #include "tokens.hpp"
 #include <optional>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 
 namespace clex {
+
+std::ostream& operator<<(std::ostream& out, TokenType token_type) noexcept {
+    switch(token_type) {
+      case TokenType::ERROR_TOKEN: {
+        return out << "<Error token>";
+      }
+      case TokenType::END_OF_FILE: {
+        return out << "<EOF>";
+      }
+      case TokenType::NUMBER: {
+        return out << "Number";
+      }
+      case TokenType::IDENTIFIER: {
+        return out << "Identifier";
+      }
+      case TokenType::OP_PLUS: {
+        return out << "Plus ('+')";
+      }
+      case TokenType::OP_MINUS: {
+        return out << "Minus ('-')";
+      }
+      case TokenType::OP_ASTERISK: {
+        return out << "Asterisk ('*')";
+      }
+      case TokenType::OP_SLASH: {
+        return out << "Slash ('/')";
+      }
+      case TokenType::OP_CARET: {
+        return out << "Caret ('^')";
+      }
+      case TokenType::ASSIGN: {
+        return out << "Assign ('=')";
+      }
+      case TokenType::PAREN_L: {
+        return out << "Left Parenthesis ('(')";
+      }
+      case TokenType::PAREN_R: {
+        return out << "Right Parenthesis (')')";
+      }
+      default: {
+        return out << "<Invalid token type>";
+      }
+    }
+}
 
 Token::Token(TokenType type, Token::TokenVariant&& data) noexcept :
     m_data(data), m_type(type) {};
@@ -15,7 +60,7 @@ Token::Token(TokenType type) : m_data(), m_type(type) {
     static const int TIMES_DIVIDE_BINDING_POWER = 2;
     static const int EXPONENT_BINDING_POWER = 3;
     if(type == TokenType::NUMBER || type == TokenType::IDENTIFIER) {
-        throw new std::invalid_argument("No token info provided for number/identifier token. Use Token::from_number() or Token::from_ident() instead");
+        throw std::invalid_argument("No token info provided for number/identifier token. Use Token::from_number() or Token::from_ident() instead");
     } else {
         switch (type) {
           case TokenType::OP_PLUS:

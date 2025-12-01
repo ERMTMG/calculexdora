@@ -13,7 +13,7 @@ namespace clex {
 
 OperandExpression::OperandExpression(Token&& tok) : m_tok(tok) {
     if(!tok.is_operand_token()) {
-        throw new std::invalid_argument("Invalid token for operand");
+        throw std::invalid_argument("Invalid token for operand");
     }
 };
 
@@ -28,10 +28,10 @@ std::ostream& operator<<(std::ostream& out, const OperandExpression& expr) {
 BinOpExpression::BinOpExpression(Token&& oper, std::unique_ptr<Expression>&& lhs, std::unique_ptr<Expression>&& rhs) :
   m_operator(oper), m_lhs(std::move(lhs)), m_rhs(std::move(rhs)) {
     if(!oper.is_operator_token()) {
-        throw new std::invalid_argument("Invalid token for binary operation");
+        throw std::invalid_argument("Invalid token for binary operation");
     }
     if(m_lhs == nullptr || m_rhs == nullptr) {
-        throw new std::invalid_argument(
+        throw std::invalid_argument(
             "Invalid expression pointer(s) for binary operation (" 
             + (m_lhs ? std::string{} : "lhs == nullptr,")
             + (m_rhs ? std::string{} : "rhs == nullptr") + ')'

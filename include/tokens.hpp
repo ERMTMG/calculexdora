@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <optional>
+#include <ostream>
 #include <variant>
 #include <string>
 
@@ -20,6 +21,8 @@ enum class TokenType {
     PAREN_L,     // "("
     PAREN_R,     // ")"
 };
+
+std::ostream& operator<<(std::ostream& out, TokenType token_type) noexcept;
 
 class Token {
   public:
