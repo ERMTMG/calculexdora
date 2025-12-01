@@ -1,3 +1,4 @@
+#include "parser_errors.hpp"
 #include "tokens.hpp"
 #include "parser.hpp"
 #include <cstddef>
@@ -54,11 +55,16 @@ int main(int argc, char** argv) {
     }
     std::cout << '\n';
     clex::Parser parser = clex::Parser(std::move(toks));
-    auto expr = parser.parse_expression();
-
-    if(expr != nullptr) {
-        std::cout << "Resultado: " << *expr << '\n';
-    } else {
-        std::cout << "¡Expresión resultante nula!\n";
+    try {
+        auto expr = parser.parse_expression();
+        if(expr != nullptr) {
+            std::cout << "Resultado: " << *expr << '\n';
+        } else {
+            std::cout << "¡Expresión resultante nula!\n";
+        }
+    } catch(clex::ParserError& err) {
+        std::cerr << "Se ha detectado un error sintáctico en la expresión:\n";
+        err.print_to(std::cerr);
     }
+
 }

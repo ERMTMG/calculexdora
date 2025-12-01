@@ -1,4 +1,5 @@
 #include "parser.hpp"
+#include "parser_errors.hpp"
 #include "syntax_tree.hpp"
 #include "token_list.hpp"
 #include "tokens.hpp"
@@ -20,8 +21,7 @@ Token Parser::expect_operand_token() {
       case TokenType::IDENTIFIER: 
         return tok;
       default:
-        std::cerr << "Expected operand and not " << tok;
-        throw "bad token, expected operand"; // TODO: añadir errores como dios manda
+        throw ExpectedToken({Token::identifier(""), Token::number("")}, tok);
     }
 }
 
@@ -41,8 +41,7 @@ std::unique_ptr<Expression> Parser::parse_expression_recursive(int minimal_bindi
         } 
         default: {
             if(!operator_tok.is_operator_token()) {
-                std::cerr << "Expected operator and not " << operator_tok;
-                throw "expected operator";
+                throw ExpectedOperator(operator_tok);
             }
         }
         }
