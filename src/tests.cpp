@@ -1,4 +1,5 @@
 #include "parser_errors.hpp"
+#include "symbol_table.hpp"
 #include "tokens.hpp"
 #include "parser.hpp"
 #include <cstddef>
@@ -12,18 +13,18 @@ int main(int argc, char** argv) {
         {
             clex::Token::number("2"),
             clex::Token(clex::TokenType::OP_PLUS),
-            clex::Token::identifier("2"),
+            clex::Token::number("2"),
         },
         {
             clex::Token::number("2"),
             clex::Token(clex::TokenType::OP_PLUS),
-            clex::Token::identifier("2"),
+            clex::Token::number("2"),
             clex::Token(clex::TokenType::OP_PLUS),
-            clex::Token::identifier("2"),
+            clex::Token::number("2"),
             clex::Token(clex::TokenType::OP_PLUS),
-            clex::Token::identifier("2"),
+            clex::Token::number("2"),
             clex::Token(clex::TokenType::OP_PLUS),
-            clex::Token::identifier("2"),
+            clex::Token::number("2"),
         },
         {
             clex::Token::number("3.5"),
@@ -40,6 +41,11 @@ int main(int argc, char** argv) {
             clex::Token::number("2"),
         },
     };
+
+    clex::SymbolTable symbols;
+    symbols.set(clex::Token::identifier("abc"), 1.0);
+    symbols.set(clex::Token::identifier("xyz"), 2.0);
+
     size_t test_number = -1;
     if(argc > 1) {
         test_number = std::atoll(argv[1]);
@@ -59,6 +65,14 @@ int main(int argc, char** argv) {
         auto expr = parser.parse_expression();
         if(expr != nullptr) {
             std::cout << "Resultado: " << *expr << '\n';
+            double expr_val;
+            try {
+                expr_val = expr->evaluate(symbols);
+            } catch(int i) {
+                std::cout << "código de error " << i << '\n';
+                exit(321534);
+            }
+            std::cout << "Tras evaluar la expresión, el valor calculado es: " << expr_val << '\n';
         } else {
             std::cout << "¡Expresión resultante nula!\n";
         }
