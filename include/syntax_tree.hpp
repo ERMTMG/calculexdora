@@ -1,4 +1,5 @@
 #pragma once
+#include "symbol_table.hpp"
 #include "tokens.hpp"
 #include <memory>
 #include <ostream>
@@ -21,6 +22,8 @@ class OperandExpression {
     OperandExpression(Token&& tok);
     const Token& get_token() const noexcept;
 
+    double evaluate(const SymbolTable& symbol_table) const;
+
     friend class Expression;
     friend std::ostream& operator<<(std::ostream& out, const OperandExpression& expr);
 };
@@ -36,6 +39,9 @@ class BinOpExpression {
     BinOpExpression(Token&& oper, std::unique_ptr<Expression>&& lhs, std::unique_ptr<Expression>&& rhs);
     const Token& get_operator() const noexcept;
     std::pair<const Expression&, const Expression&> get_operands() const noexcept;
+
+    double evaluate(const SymbolTable& symbols) const;
+
     friend class Expression;
     friend std::ostream& operator<<(std::ostream& out, const BinOpExpression& expr);
 };
@@ -57,6 +63,8 @@ class Expression {
     const Token& get_token() const noexcept;
     const OperandExpression& as_operand() const;
     const BinOpExpression& as_bin_op() const;
+
+    double evaluate(const SymbolTable& symbols) const;
 
     friend std::ostream& operator<<(std::ostream& out, const Expression& expr);
 };

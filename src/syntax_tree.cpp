@@ -1,5 +1,7 @@
 #include "syntax_tree.hpp"
+#include "symbol_table.hpp"
 #include "tokens.hpp"
+#include <cmath>
 #include <cstdlib>
 #include <memory>
 #include <ostream>
@@ -104,5 +106,59 @@ std::ostream& operator<<(std::ostream& out, const Expression& expr) {
     };
     return std::visit(visit_func, expr.m_data);
 }
+
+double OperandExpression::evaluate(const SymbolTable& symbols) const {
+    if(m_tok.type() == TokenType::NUMBER) {
+        return *m_tok.get_num();
+    } else { // m_tok tiene que ser un identificador
+        auto maybe_val = symbols.get(m_tok);
+        if(maybe_val.has_value()) {
+            return *maybe_val;
+        } else {
+            throw 1; // TODO: volver a añadir errores como dios manda.
+        }
+    }
+}
+
+double BinOpExpression::evaluate(const SymbolTable& symbols) const {
+    if(m_lhs == nullptr || m_rhs == nullptr) {
+        throw 2;
+    }
+    double lhs_value = m_lhs->evaluate(symbols);
+    double rhs_value = m_rhs->evaluate(symbols);
+    switch(m_operator.type()) {
+      case TokenType::OP_PLUS: {
+        return lhs_value + rhs_value;
+      }
+      case TokenType::OP_MINUS: {
+        return lhs_value - rhs_value;
+      }
+      case TokenType::OP_ASTERISK: {
+        return lhs_value * rhs_value;
+      }
+      case TokenType::OP_SLASH: {
+        if(rhs_value == 0.0 || rhs_value == -0.0) {
+            throw 3;
+        }
+        return lhs_value / rhs_value;
+      }
+      case TokenType::OP_CARET: {
+        double result = std::pow(lhs_value, rhs_value);
+        if(result != result) { // std::pow puede devolver NaN para valores complejos (como std::pow(-1.0, 0.5))
+            throw 4;
+        }
+        return result;
+      }
+      default: __builtin_unreachable();
+    }
+}
+
+double Expression::evaluate(const SymbolTable& symbols) const {
+    auto visit_func = [&symbols](const auto& expr) -> double {
+        return expr.evaluate(symbols);
+    };
+    return std::visit(visit_func, m_data);
+}
+
 
 }
