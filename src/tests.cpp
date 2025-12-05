@@ -40,6 +40,19 @@ int main(int argc, char** argv) {
             clex::Token::identifier("abc"),
             clex::Token::number("2"),
         },
+        {
+            clex::Token::number("2"),
+            clex::Token(clex::TokenType::OP_CARET),
+            clex::Token(clex::TokenType::PAREN_L),
+            clex::Token(clex::TokenType::PAREN_L),
+            clex::Token::number("1"),
+            clex::Token(clex::TokenType::OP_PLUS),
+            clex::Token::number("1"),
+            clex::Token(clex::TokenType::PAREN_R),
+            clex::Token(clex::TokenType::OP_ASTERISK),
+            clex::Token::number("3"),
+            clex::Token(clex::TokenType::PAREN_R),
+        },
     };
 
     clex::SymbolTable symbols;

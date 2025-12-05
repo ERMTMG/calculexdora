@@ -26,24 +26,42 @@ Token Parser::expect_operand_token() {
 }
 
 std::unique_ptr<Expression> Parser::parse_expression_recursive(int minimal_binding_power) {
-    Token first_tok = expect_operand_token();
-    std::unique_ptr<Expression> lhs = std::make_unique<Expression>(
-        Expression::operand(std::move(first_tok))
-    );
+    Token first_tok = m_tokens.next();
+    std::unique_ptr<Expression> lhs;
+    switch(first_tok.type()) {
+      case TokenType::NUMBER:
+      case TokenType::IDENTIFIER: {
+        lhs = std::make_unique<Expression>(
+            Expression::operand(std::move(first_tok))
+        );
+        break;
+      }
+      case TokenType::PAREN_L: {
+        lhs = this->parse_expression_recursive(0); // reseteamos el binding power por los paréntesis
+        Token after_paren = m_tokens.next();
+        if(after_paren.type() != TokenType::PAREN_R) {
+            throw ExpectedToken({TokenType::PAREN_R}, after_paren);
+        }
+        break;
+      }
+      default: throw ExpectedToken({TokenType::IDENTIFIER, TokenType::NUMBER, TokenType::PAREN_L}, first_tok);
+    }
 
     int current_binding_power = minimal_binding_power;
 
     while(true) { // bucle infinito para seguir mirando por la derecha, que term
         Token operator_tok = m_tokens.peek();
         switch(operator_tok.type()) {
-        case TokenType::END_OF_FILE: {
-            return lhs; // Reached the end, no operation needed
-        } 
-        default: {
+          case TokenType::END_OF_FILE:
+          case TokenType::NEWLINE: 
+          case TokenType::PAREN_R: {
+            return lhs; // hemos llegado al final de la expresión, no hace falta operador
+          } 
+          default: {
             if(!operator_tok.is_operator_token()) {
                 throw ExpectedOperator(operator_tok);
             }
-        }
+          }
         }
 
         current_binding_power = *operator_tok.get_binding_power();

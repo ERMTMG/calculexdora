@@ -10,6 +10,7 @@ namespace clex {
 enum class TokenType {
     ERROR_TOKEN = -1,
     END_OF_FILE,
+    NEWLINE,
     NUMBER,      // 0123456789
     IDENTIFIER,  // nombre de variable
     OP_PLUS,     // "+"
