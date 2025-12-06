@@ -18,6 +18,7 @@ class TokenList {
     bool at_end() const noexcept;
     const Token& peek() const noexcept;
     Token next() noexcept;
+    void give_back(Token&& tok) noexcept;
 };
 
 }

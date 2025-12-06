@@ -30,4 +30,8 @@ Token TokenList::next() noexcept {
     }
 }
 
+void TokenList::give_back(Token&& tok) noexcept {
+    m_tokens.emplace_back(std::move(tok));
+}
+
 }

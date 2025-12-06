@@ -25,28 +25,27 @@ Token Parser::expect_operand_token() {
     }
 }
 
-std::unique_ptr<Expression> Parser::parse_expression_recursive(int minimal_binding_power) {
+Expression Parser::parse_expression_recursive(int minimal_binding_power) {
     Token first_tok = m_tokens.next();
-    std::unique_ptr<Expression> lhs;
-    switch(first_tok.type()) {
-      case TokenType::NUMBER:
-      case TokenType::IDENTIFIER: {
-        lhs = std::make_unique<Expression>(
-            Expression::operand(std::move(first_tok))
-        );
-        break;
-      }
-      case TokenType::PAREN_L: {
-        lhs = this->parse_expression_recursive(0); // reseteamos el binding power por los paréntesis
-        Token after_paren = m_tokens.next();
-        if(after_paren.type() != TokenType::PAREN_R) {
-            throw MismatchedParentheses(first_tok, after_paren);
+    Expression lhs = [&]() -> Expression { // Tengo que usar una lambda aquí porque no existe el constructor por defecto de Expression
+        switch(first_tok.type()) {
+          case TokenType::NUMBER:
+          case TokenType::IDENTIFIER: {
+            return Expression::operand(std::move(first_tok));
+            break;
+          }
+          case TokenType::PAREN_L: {
+            return this->parse_expression_recursive(0); // reseteamos el binding power por los paréntesis
+            Token after_paren = m_tokens.next();
+            if(after_paren.type() != TokenType::PAREN_R) {
+                throw MismatchedParentheses(first_tok, after_paren);
+            }
+            break;
+          }
+          default: throw ExpectedToken({TokenType::IDENTIFIER, TokenType::NUMBER, TokenType::PAREN_L}, first_tok);
         }
-        break;
-      }
-      default: throw ExpectedToken({TokenType::IDENTIFIER, TokenType::NUMBER, TokenType::PAREN_L}, first_tok);
-    }
-
+    }();
+    
     int current_binding_power = minimal_binding_power;
 
     while(true) { // bucle infinito para seguir mirando por la derecha, que term
@@ -71,20 +70,45 @@ std::unique_ptr<Expression> Parser::parse_expression_recursive(int minimal_bindi
 
         m_tokens.next(); // nos saltamos el token que ya sabemos que es un operador
 
-        std::unique_ptr<Expression> rhs = parse_expression_recursive(current_binding_power); // hacemos recursión para comprobar si a la derecha hay una expresion compleja
+        Expression rhs = parse_expression_recursive(current_binding_power); // hacemos recursión para comprobar si a la derecha hay una expresion compleja
 
-        lhs = std::make_unique<Expression>( // y recogemos todo lo que hemos hecho en lhs para seguir con la próxima iteración del bucle
-            Expression::bin_op(
+        lhs = Expression::bin_op(
                 std::move(operator_tok), 
-                std::move(lhs), 
-                std::move(rhs)
-            )
+                std::make_unique<Expression>(std::move(lhs)), 
+                std::make_unique<Expression>(std::move(rhs))
         );
     }
 }
 
-std::unique_ptr<Expression> Parser::parse_expression() {
+Expression Parser::parse_expression() {
     return parse_expression_recursive(-1);
+}
+
+Assignment Parser::parse_assignment(Token&& consumed_var_token) {
+    if(m_tokens.peek().type() != TokenType::ASSIGN) {
+        throw ExpectedToken({TokenType::ASSIGN}, m_tokens.peek().type());
+    }
+    m_tokens.next();
+    return Assignment {
+        std::move(consumed_var_token),
+        std::make_unique<Expression>(
+            parse_expression()
+        )
+    };
+}
+
+Statement Parser::parse_next_statement() {
+    if (m_tokens.peek().type() != TokenType::IDENTIFIER) {
+        return Statement::expression(parse_expression());
+    } else {
+        Token first_tok = m_tokens.next();
+        if(m_tokens.peek().type() != TokenType::ASSIGN) {
+            m_tokens.give_back(std::move(first_tok));
+            return Statement::expression(parse_expression());
+        } else {
+            return Statement::assignment(parse_assignment(std::move(first_tok)));
+        }
+    }
 }
 
 }
