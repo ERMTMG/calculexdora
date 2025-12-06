@@ -1,5 +1,6 @@
 #include "parser_errors.hpp"
 #include "symbol_table.hpp"
+#include "syntax_tree.hpp"
 #include "tokens.hpp"
 #include "parser.hpp"
 #include <cstddef>
@@ -53,6 +54,13 @@ int main(int argc, char** argv) {
             clex::Token::number("3"),
             clex::Token(clex::TokenType::PAREN_R),
         },
+        {
+            clex::Token::identifier("pqr"),
+            clex::Token(clex::TokenType::ASSIGN),
+            clex::Token::identifier("abc"),
+            clex::Token(clex::TokenType::OP_PLUS),
+            clex::Token::identifier("xyz"),
+        }
     };
 
     clex::SymbolTable symbols;
@@ -75,19 +83,29 @@ int main(int argc, char** argv) {
     std::cout << '\n';
     clex::Parser parser = clex::Parser(std::move(toks));
     try {
-        auto expr = parser.parse_expression();
-        if(expr != nullptr) {
-            std::cout << "Resultado: " << *expr << '\n';
+        auto statement = parser.parse_next_statement();
+        if(statement.is_expression()) {
+            clex::Expression expr = statement.move_as_expression();
+            std::cout << "Resultado (Expresión): " << expr << '\n';
             double expr_val;
             try {
-                expr_val = expr->evaluate(symbols);
+                expr_val = expr.evaluate(symbols);
             } catch(int i) {
                 std::cout << "código de error " << i << '\n';
                 exit(321534);
             }
             std::cout << "Tras evaluar la expresión, el valor calculado es: " << expr_val << '\n';
         } else {
-            std::cout << "¡Expresión resultante nula!\n";
+            clex::Assignment assign = statement.move_as_assignment();
+            std::cout << "Resultado (Asignación): " << assign << '\n';
+            clex::Token var = assign.get_var();
+            try {
+                assign.execute(symbols);
+            } catch(int i) {
+                std::cout << "código de error " << i << '\n';
+                exit(321534);
+            }
+            std::cout << "Se ha ejecutado la asignación, el valor de la variable es ahora " << *symbols.get(var) << '\n';
         }
     } catch(clex::ParserError& err) {
         std::cerr << "Se ha detectado un error sintáctico en la expresión:\n";
