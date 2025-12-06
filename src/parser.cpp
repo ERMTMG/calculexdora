@@ -35,12 +35,12 @@ Expression Parser::parse_expression_recursive(int minimal_binding_power) {
             break;
           }
           case TokenType::PAREN_L: {
-            return this->parse_expression_recursive(0); // reseteamos el binding power por los paréntesis
+            Expression tmp = this->parse_expression_recursive(0); // reseteamos el binding power por los paréntesis
             Token after_paren = m_tokens.next();
             if(after_paren.type() != TokenType::PAREN_R) {
                 throw MismatchedParentheses(first_tok, after_paren);
             }
-            break;
+            return tmp;
           }
           default: throw ExpectedToken({TokenType::IDENTIFIER, TokenType::NUMBER, TokenType::PAREN_L}, first_tok);
         }
