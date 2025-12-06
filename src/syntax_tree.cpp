@@ -160,5 +160,62 @@ double Expression::evaluate(const SymbolTable& symbols) const {
     return std::visit(visit_func, m_data);
 }
 
+Assignment::Assignment(Token&& variable_lhs, std::unique_ptr<Expression>&& rhs) : 
+  m_variable_lhs(std::move(variable_lhs)), m_rhs(std::move(rhs)) {
+    if(m_variable_lhs.type() != TokenType::IDENTIFIER) {
+        throw std::invalid_argument("Left-hand sife of assignment expression must be an identifier");
+    }
+    if(m_rhs == nullptr) {
+        throw std::invalid_argument("Right-hand side pointer of assignment expression is null");
+    }
+};
+
+const Token& Assignment::get_var() const noexcept {
+    return m_variable_lhs;
+}
+
+const std::unique_ptr<Expression>& Assignment::get_value() const noexcept {
+    return m_rhs;
+}
+
+void Assignment::execute(SymbolTable& symbols) const {
+    double assign_val = m_rhs->evaluate(symbols);
+    symbols.set(m_variable_lhs, assign_val);
+}
+
+std::ostream& operator<<(std::ostream& out, const Assignment& assign) {
+    return out << "<Assignment " << assign.m_variable_lhs << " = " << *assign.m_rhs << '>';
+}
+
+Statement::Statement(Expression&& expr) noexcept : m_data(std::move(expr)) {};
+Statement::Statement(Assignment&& assign) noexcept : m_data(std::move(assign)) {};
+
+Statement Statement::expression(Expression &&expr) noexcept {
+    return Statement(std::move(expr));
+}
+
+Statement Statement::assignment(Assignment&& assign) noexcept {
+    return Statement(std::move(assign));
+}
+
+bool Statement::is_expression() const noexcept {
+    return std::holds_alternative<Expression>(m_data);
+}
+
+const Expression& Statement::ref_as_expression() const {
+    return std::get<Expression>(m_data);
+}
+
+const Assignment& Statement::ref_as_assignment() const {
+    return std::get<Assignment>(m_data);
+}
+
+Expression&& Statement::move_as_expression() {
+    return std::get<Expression>(std::move(m_data));
+}
+
+Assignment&& Statement::move_as_assignment() {
+    return std::get<Assignment>(std::move(m_data));
+}
 
 }

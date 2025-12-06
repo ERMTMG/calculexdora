@@ -71,4 +71,37 @@ class Expression {
 
 std::ostream& operator<<(std::ostream& out, const Expression& expr);
 
+class Assignment {
+  private:
+    Token m_variable_lhs;
+    std::unique_ptr<Expression> m_rhs;
+  public:
+    Assignment(Token&& variable_lhs, std::unique_ptr<Expression>&& rhs);
+
+    const Token& get_var() const noexcept;
+    const std::unique_ptr<Expression>& get_value() const noexcept;
+    
+    void execute(SymbolTable& symbols) const;
+
+    friend std::ostream& operator<<(std::ostream& out, const Assignment& assign);
+};
+
+std::ostream& operator<<(std::ostream& out, const Assignment& assign);
+
+class Statement {
+  private:
+    std::variant<Expression, Assignment> m_data;
+    Statement(Expression&& expr) noexcept;
+    Statement(Assignment&& assign) noexcept;
+    Statement() = delete;
+  public:  
+    static Statement expression(Expression&& expr) noexcept;
+    static Statement assignment(Assignment&& assign) noexcept;
+    bool is_expression() const noexcept;
+    inline bool is_assignment() const noexcept { return !is_expression(); }
+    Expression&& move_as_expression();
+    Assignment&& move_as_assignment();
+    const Expression& ref_as_expression() const;
+    const Assignment& ref_as_assignment() const;
+};
 }
