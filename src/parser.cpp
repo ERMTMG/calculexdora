@@ -40,7 +40,7 @@ std::unique_ptr<Expression> Parser::parse_expression_recursive(int minimal_bindi
         lhs = this->parse_expression_recursive(0); // reseteamos el binding power por los paréntesis
         Token after_paren = m_tokens.next();
         if(after_paren.type() != TokenType::PAREN_R) {
-            throw ExpectedToken({TokenType::PAREN_R}, after_paren);
+            throw MismatchedParentheses(first_tok, after_paren);
         }
         break;
       }

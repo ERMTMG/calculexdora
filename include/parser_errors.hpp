@@ -9,10 +9,12 @@ namespace clex {
 class ParserError {
   protected:  
     std::string m_message;
+    Token m_problem_token;
   public:
-    ParserError(std::string&& message) noexcept;
+    ParserError(std::string&& message, Token problem_token) noexcept;
     const std::string& what() const noexcept;
     virtual void print_to(std::ostream& out) const noexcept;
+    Token problem_token() const noexcept;
 };
 
 class ExpectedToken : public ParserError {

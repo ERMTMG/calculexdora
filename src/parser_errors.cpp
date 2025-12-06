@@ -8,7 +8,7 @@
 
 namespace clex {
 
-ParserError::ParserError(std::string&& message) noexcept : m_message(std::move(message)) {}; 
+ParserError::ParserError(std::string&& message, Token problem_token) noexcept : m_message(std::move(message)), m_problem_token(problem_token) {}; 
 
 const std::string& ParserError::what() const noexcept {
     return m_message;
@@ -18,7 +18,11 @@ void ParserError::print_to(std::ostream& out) const noexcept {
     out << "<GENERIC PARSER ERROR> " << this->what();
 }
 
-ExpectedToken::ExpectedToken(std::vector<TokenType>&& expected_tokens, Token actual_token) noexcept : ParserError("") {
+Token ParserError::problem_token() const noexcept {
+    return m_problem_token;
+}
+
+ExpectedToken::ExpectedToken(std::vector<TokenType>&& expected_tokens, Token actual_token) noexcept : ParserError("", actual_token) {
     std::stringstream msg;
     if(expected_tokens.empty()) {
         std::cerr << "Invalid exception constructed";
@@ -56,7 +60,7 @@ void ExpectedOperator::print_to(std::ostream& out) const noexcept {
     out << "<EXPECTED OPERATOR> " << this->what();
 }
 
-MismatchedParentheses::MismatchedParentheses(Token paren_token, Token nearby_token) noexcept : ParserError("") {
+MismatchedParentheses::MismatchedParentheses(Token paren_token, Token nearby_token) noexcept : ParserError("", nearby_token) {
     std::stringstream msg{"Mismatched parenthesis "};
     msg << paren_token << " near token " << nearby_token << '\n';
     m_message = msg.str();
