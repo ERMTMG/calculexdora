@@ -1,4 +1,5 @@
 #include "syntax_tree.hpp"
+#include "eval_errors.hpp"
 #include "symbol_table.hpp"
 #include "tokens.hpp"
 #include <cmath>
@@ -27,6 +28,10 @@ std::ostream& operator<<(std::ostream& out, const OperandExpression& expr) {
     return out << "<Operand " << expr.m_tok << '>';
 }
 
+Expression OperandExpression::clone() const noexcept {
+    return Expression::operand(Token{m_tok});
+}
+
 BinOpExpression::BinOpExpression(Token&& oper, std::unique_ptr<Expression>&& lhs, std::unique_ptr<Expression>&& rhs) :
   m_operator(oper), m_lhs(std::move(lhs)), m_rhs(std::move(rhs)) {
     if(!oper.is_operator_token()) {
@@ -51,6 +56,14 @@ std::pair<const Expression&, const Expression&> BinOpExpression::get_operands() 
 
 std::ostream& operator<<(std::ostream& out, const BinOpExpression& expr) {
     return out << "<Bin-op " << *expr.m_lhs << ' ' << expr.m_operator << ' ' << *expr.m_rhs << '>';
+}
+
+Expression BinOpExpression::clone() const noexcept {
+    return Expression::bin_op(
+        Token(m_operator), 
+        std::make_unique<Expression>(m_lhs->clone()), 
+        std::make_unique<Expression>(m_rhs->clone())
+    );
 }
 
 Expression::Expression(BinOpExpression&& bin_op) noexcept : m_data(std::move(bin_op)), m_type(ExpressionType::BIN_OP) {};
@@ -107,6 +120,13 @@ std::ostream& operator<<(std::ostream& out, const Expression& expr) {
     return std::visit(visit_func, expr.m_data);
 }
 
+Expression Expression::clone() const noexcept {
+    auto visit_func = [](const auto& expr) -> Expression {
+        return expr.clone();
+    };
+    return std::visit(visit_func, m_data);
+}
+
 double OperandExpression::evaluate(const SymbolTable& symbols) const {
     if(m_tok.type() == TokenType::NUMBER) {
         return *m_tok.get_num();
@@ -115,15 +135,12 @@ double OperandExpression::evaluate(const SymbolTable& symbols) const {
         if(maybe_val.has_value()) {
             return *maybe_val;
         } else {
-            throw 1; // TODO: volver a añadir errores como dios manda.
+            throw UndefinedVariable(std::make_unique<Expression>(this->clone()));
         }
     }
 }
 
 double BinOpExpression::evaluate(const SymbolTable& symbols) const {
-    if(m_lhs == nullptr || m_rhs == nullptr) {
-        throw 2;
-    }
     double lhs_value = m_lhs->evaluate(symbols);
     double rhs_value = m_rhs->evaluate(symbols);
     switch(m_operator.type()) {
@@ -138,14 +155,14 @@ double BinOpExpression::evaluate(const SymbolTable& symbols) const {
       }
       case TokenType::OP_SLASH: {
         if(rhs_value == 0.0 || rhs_value == -0.0) {
-            throw 3;
+            throw DivideByZeroError(std::make_unique<Expression>(this->clone()));
         }
         return lhs_value / rhs_value;
       }
       case TokenType::OP_CARET: {
         double result = std::pow(lhs_value, rhs_value);
         if(result != result) { // std::pow puede devolver NaN para valores complejos (como std::pow(-1.0, 0.5))
-            throw 4;
+            throw ComplexResultError(std::make_unique<Expression>(this->clone()));
         }
         return result;
       }

@@ -22,6 +22,7 @@ class OperandExpression {
     OperandExpression(Token&& tok);
     const Token& get_token() const noexcept;
 
+    Expression clone() const noexcept;
     double evaluate(const SymbolTable& symbol_table) const;
 
     friend class Expression;
@@ -40,6 +41,7 @@ class BinOpExpression {
     const Token& get_operator() const noexcept;
     std::pair<const Expression&, const Expression&> get_operands() const noexcept;
 
+    Expression clone() const noexcept;
     double evaluate(const SymbolTable& symbols) const;
 
     friend class Expression;
@@ -64,6 +66,7 @@ class Expression {
     const OperandExpression& as_operand() const;
     const BinOpExpression& as_bin_op() const;
 
+    Expression clone() const noexcept;
     double evaluate(const SymbolTable& symbols) const;
 
     friend std::ostream& operator<<(std::ostream& out, const Expression& expr);
