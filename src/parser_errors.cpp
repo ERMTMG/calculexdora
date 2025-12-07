@@ -15,7 +15,7 @@ const std::string& ParserError::what() const noexcept {
 }
 
 void ParserError::print_to(std::ostream& out) const noexcept {
-    out << "<GENERIC PARSER ERROR> " << this->what();
+    out << "<ERROR DE SINTAXIS> " << this->what();
 }
 
 Token ParserError::problem_token() const noexcept {
@@ -25,23 +25,23 @@ Token ParserError::problem_token() const noexcept {
 ExpectedToken::ExpectedToken(std::vector<TokenType>&& expected_tokens, Token actual_token) noexcept : ParserError("", actual_token) {
     std::stringstream msg;
     if(expected_tokens.empty()) {
-        std::cerr << "Invalid exception constructed";
+        std::cerr << "Se ha construido una excepción inválida (esto no debería pasar)";
         std::abort();
     }
     if(expected_tokens.size() < 2) {
-        msg << "Expected token " << expected_tokens[0] << ", ";
+        msg << "Se esperaba un token de tipo " << expected_tokens[0] << ", ";
     } else {
-        msg << "Expected one of ";
+        msg << "Se esperaba un token de uno de los siguientes tipos: ";
         for(TokenType& token_type : expected_tokens) {
             msg << token_type << ", ";
         }
     }
-    msg << "got " << actual_token << '\n';
+    msg << "pero se obtuvo " << actual_token << '\n';
     m_message = msg.str();
 }
 
 void ExpectedToken::print_to(std::ostream& out) const noexcept {
-    out << "<INVALID TOKEN> " << this->what();
+    out << "<TOKEN INVÁLIDO> " << this->what();
 }
 
 ExpectedOperator::ExpectedOperator(Token actual_token) noexcept : 
@@ -57,17 +57,17 @@ ExpectedOperator::ExpectedOperator(Token actual_token) noexcept :
     ) {};
 
 void ExpectedOperator::print_to(std::ostream& out) const noexcept {
-    out << "<EXPECTED OPERATOR> " << this->what();
+    out << "<OPERADOR ESPERADO> " << this->what();
 }
 
 MismatchedParentheses::MismatchedParentheses(Token paren_token, Token nearby_token) noexcept : ParserError("", nearby_token) {
-    std::stringstream msg{"Mismatched parenthesis "};
-    msg << paren_token << " near token " << nearby_token << '\n';
+    std::stringstream msg{"Paréntesis desparejo "};
+    msg << paren_token << " cerca del token " << nearby_token << '\n';
     m_message = msg.str();
 }
 
 void MismatchedParentheses::print_to(std::ostream& out) const noexcept {
-    out << "<MISMATCHED PARENTHESES> " << this->what();
+    out << "<PARÉNTESIS DESPAREJO> " << this->what();
 }
 
 }
