@@ -10,14 +10,24 @@ export COMPILER_FLAGS
 SRCS := $(wildcard src/*.cpp)
 OBJS := $(patsubst src/%.cpp,obj/%.o,$(SRCS))
 
+CLEX_OBJS := $(filter-out obj/tests.o obj/main.o, $(OBJS))
 
-TARGET := bin/test.bin
+
+TESTS := bin/test
+MAIN := bin/calculexdora
+
 
 # Default rule
-all: $(TARGET)
+all: $(TESTS) $(MAIN)
+
+tests: $(TESTS)
+main: $(MAIN)
 
 # Link
-$(TARGET): $(OBJS)
+$(TESTS): $(CLEX_OBJS) obj/tests.o
+	$(CXX) $(COMPILER_FLAGS) -o $@ $^
+
+$(MAIN): $(CLEX_OBJS) obj/main.o
 	$(CXX) $(COMPILER_FLAGS) -o $@ $^
 
 # Compile each source file into obj/
@@ -29,8 +39,8 @@ clean:
 	rm -rf obj/*.o bin/*
 
 # Optional: run program
-run: $(TARGET)
-	./$(TARGET)
+run: $(MAIN)
+	./$(MAIN)
 
 .PHONY: all clean run
 
