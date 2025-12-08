@@ -23,8 +23,9 @@ void EvalError::print_to(std::ostream& out) const noexcept {
 }
 
 UndefinedVariable::UndefinedVariable(std::unique_ptr<Expression>&& var_expr) noexcept : EvalError("", std::move(var_expr)) {
-    std::stringstream msg{"No se ha definido la variable ''"};
-    msg << *m_problem->as_operand().get_token().get_ident() << '`'; // Se garantiza que var_expr sea una expresión que contenga un solo operando identificador
+    std::stringstream msg; 
+    msg << "No se ha definido la variable `"
+        << *m_problem->as_operand().get_token().get_ident() << '`'; // Se garantiza que var_expr sea una expresión que contenga un solo operando identificador
     m_message = msg.str();
 }
 
@@ -33,8 +34,9 @@ void UndefinedVariable::print_to(std::ostream& out) const noexcept {
 }
 
 DivideByZeroError::DivideByZeroError(std::unique_ptr<Expression>&& division) noexcept : EvalError("", std::move(division)) {
-    std::stringstream msg{"División por cero en la expresión "};
-    msg << *m_problem;
+    std::stringstream msg;
+    msg << "División por cero en la expresión "
+        << *m_problem;
     m_message = msg.str();
 }
 
@@ -43,8 +45,9 @@ void DivideByZeroError::print_to(std::ostream& out) const noexcept {
 }
 
 ComplexResultError::ComplexResultError(std::unique_ptr<Expression>&& expr) noexcept : EvalError("", std::move(expr)) {
-    std::stringstream msg{"El resultado de la expresión "};
-    msg << *m_problem << " no es un número real";
+    std::stringstream msg;
+    msg << "El resultado de la expresión "
+        << *m_problem << " no es un número real";
     m_message = msg.str();
 }
 
