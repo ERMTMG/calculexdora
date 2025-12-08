@@ -82,6 +82,20 @@ int main(int argc, char** argv) {
             clex::Token(clex::TokenType::OP_CARET),
             clex::Token::number("0.5"),
         },
+
+        {
+            clex::Token::number("1"),
+            clex::Token(clex::TokenType::OP_PLUS),
+            clex::Token::number("2"),
+            clex::Token(clex::TokenType::OP_CARET),
+            clex::Token::number("2"),
+            clex::Token(clex::TokenType::OP_CARET),
+            clex::Token::number("2"),
+            clex::Token(clex::TokenType::OP_CARET),
+            clex::Token::number("2"),
+            clex::Token(clex::TokenType::OP_SLASH),
+            clex::Token::number("64"),
+        },
     };
 
     clex::SymbolTable symbols;
@@ -92,7 +106,7 @@ int main(int argc, char** argv) {
     if(argc > 1) {
         test_number = std::atoll(argv[1]);
     } else {
-        std::cout << "Por favor, introduzca número de test (0-3): ";
+        std::cout << "Por favor, introduzca número de test (0-9): ";
         std::cin >> test_number;
     }
 
