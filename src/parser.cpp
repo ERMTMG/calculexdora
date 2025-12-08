@@ -46,7 +46,7 @@ Expression Parser::parse_expression_recursive(int minimal_binding_power) {
         }
     }();
     
-    int current_binding_power = minimal_binding_power;
+    int current_binding_power;
 
     while(true) { // bucle infinito para seguir mirando por la derecha, que term
         Token operator_tok = m_tokens.peek();
@@ -64,7 +64,11 @@ Expression Parser::parse_expression_recursive(int minimal_binding_power) {
         }
 
         current_binding_power = *operator_tok.get_binding_power();
-        if(current_binding_power <= minimal_binding_power) { // no seguimos haciendo binding hacia la derecha, terminamos el bucle y retornamos
+        if(
+            (current_binding_power < minimal_binding_power && operator_tok.type() == TokenType::OP_CARET) // El operador ^ es asociativo a la derecha así que requiere un binding power estrictamente menor
+            || (current_binding_power <= minimal_binding_power && operator_tok.type() != TokenType::OP_CARET) // El resto de operadores son asociativos a la izquierda, retornan conque sea menor o igual
+        ) { 
+            // En estos casos, no seguimos haciendo binding hacia la derecha, terminamos el bucle y retornamos
             return lhs;
         }
 
