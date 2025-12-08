@@ -1,4 +1,5 @@
 #include "parser_errors.hpp"
+#include "eval_errors.hpp"
 #include "symbol_table.hpp"
 #include "syntax_tree.hpp"
 #include "tokens.hpp"
@@ -60,7 +61,27 @@ int main(int argc, char** argv) {
             clex::Token::identifier("abc"),
             clex::Token(clex::TokenType::OP_PLUS),
             clex::Token::identifier("xyz"),
-        }
+        },
+        {
+            clex::Token::identifier("undefined"),
+            clex::Token(clex::TokenType::OP_PLUS),
+            clex::Token::number("1"),
+        },
+        {
+            clex::Token::number("0"),
+            clex::Token(clex::TokenType::OP_SLASH),
+            clex::Token::number("0"),
+        },
+
+        {
+            clex::Token(clex::TokenType::PAREN_L),
+            clex::Token::number("0"),
+            clex::Token(clex::TokenType::OP_MINUS),
+            clex::Token::number("1"),
+            clex::Token(clex::TokenType::PAREN_R),
+            clex::Token(clex::TokenType::OP_CARET),
+            clex::Token::number("0.5"),
+        },
     };
 
     clex::SymbolTable symbols;
@@ -90,9 +111,10 @@ int main(int argc, char** argv) {
             double expr_val;
             try {
                 expr_val = expr.evaluate(symbols);
-            } catch(int i) {
-                std::cout << "código de error " << i << '\n';
-                exit(321534);
+            } catch(clex::EvalError& err) {
+                std::cerr << "Se ha detectado un error de evaluación en la expresión:\n";
+                err.print_to(std::cerr);
+                exit(1);
             }
             std::cout << "Tras evaluar la expresión, el valor calculado es: " << expr_val << '\n';
         } else {
@@ -101,15 +123,17 @@ int main(int argc, char** argv) {
             clex::Token var = assign.get_var();
             try {
                 assign.execute(symbols);
-            } catch(int i) {
-                std::cout << "código de error " << i << '\n';
-                exit(321534);
+            } catch(clex::EvalError& err) {
+                std::cerr << "Se ha detectado un error de evaluación en la expresión:\n";
+                err.print_to(std::cerr);
+                exit(1);
             }
             std::cout << "Se ha ejecutado la asignación, el valor de la variable es ahora " << *symbols.get(var) << '\n';
         }
     } catch(clex::ParserError& err) {
         std::cerr << "Se ha detectado un error sintáctico en la expresión:\n";
         err.print_to(std::cerr);
+        exit(2);
     }
 
 }
