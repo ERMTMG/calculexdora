@@ -5,6 +5,12 @@
 
 namespace clex {
 
+SymbolTable SymbolTable::from_map(std::unordered_map<std::string, double>&& map) {
+    SymbolTable output;
+    output.m_vars = std::move(map);
+    return output;
+}
+
 std::optional<double> SymbolTable::get(const Token& ident) const noexcept {
     std::string var_name = *ident.get_ident();
     auto itr = m_vars.find(var_name);
