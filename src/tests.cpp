@@ -127,6 +127,11 @@ int main(int argc, char** argv) {
             clex::SymbolTable::from_map({{"b", 3}})
         },
         Test {
+            "Operadores unarios",
+            "+-(2 - -2)*+3",
+            -12
+        },
+        Test {
             "Error 1: Tokens inválidos",
             "a = 2 + @"
         },

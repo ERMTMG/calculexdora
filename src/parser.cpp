@@ -42,7 +42,18 @@ Expression Parser::parse_expression_recursive(int minimal_binding_power) {
             }
             return tmp;
           }
-          default: throw ExpectedToken({TokenType::IDENTIFIER, TokenType::NUMBER, TokenType::PAREN_L}, first_tok);
+          default: {
+            if(first_tok.is_unary_operator_token()) {
+                int op_binding_power = *first_tok.get_unary_binding_power();
+                Expression operand = this->parse_expression_recursive(op_binding_power);
+                return Expression::unary_op(
+                    std::move(first_tok),
+                    std::make_unique<Expression>(std::move(operand))
+                );
+            } else {
+                throw ExpectedToken({TokenType::IDENTIFIER, TokenType::NUMBER, TokenType::PAREN_L}, first_tok);
+            } 
+          }
         }
     }();
     
@@ -63,10 +74,10 @@ Expression Parser::parse_expression_recursive(int minimal_binding_power) {
           }
         }
 
-        current_binding_power = *operator_tok.get_binding_power();
+        current_binding_power = *operator_tok.get_binary_binding_power();
         if(
-            (current_binding_power < minimal_binding_power && operator_tok.type() == TokenType::OP_CARET) // El operador ^ es asociativo a la derecha así que requiere un binding power estrictamente menor
-            || (current_binding_power <= minimal_binding_power && operator_tok.type() != TokenType::OP_CARET) // El resto de operadores son asociativos a la izquierda, retornan conque sea menor o igual
+            (current_binding_power < minimal_binding_power && operator_tok.is_right_associative()) // El operador ^ es asociativo a la derecha así que requiere un binding power estrictamente menor
+            || (current_binding_power <= minimal_binding_power && !operator_tok.is_right_associative()) // El resto de operadores son asociativos a la izquierda, retornan conque sea menor o igual
         ) { 
             // En estos casos, no seguimos haciendo binding hacia la derecha, terminamos el bucle y retornamos
             return lhs;
