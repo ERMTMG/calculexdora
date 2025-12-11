@@ -66,6 +66,35 @@ Expression BinOpExpression::clone() const noexcept {
     );
 }
 
+UnaryOpExpression::UnaryOpExpression(Token&& oper, std::unique_ptr<Expression>&& operand) :
+  m_operator(oper), m_operand(std::move(operand)) {
+    if(!oper.is_operator_token()) {
+        throw std::invalid_argument("Invalid token for unary operation");
+    }
+    if(m_operand == nullptr) {
+        throw std::invalid_argument("Invalid expression pointers for binary operation (operand == nullptr)");
+    }
+}
+
+const Token& UnaryOpExpression::get_operator() const noexcept {
+    return m_operator;
+}
+
+const Expression& UnaryOpExpression::get_operand() const noexcept {
+    return *m_operand;
+}
+
+std::ostream& operator<<(std::ostream& out, const UnaryOpExpression& expr) {
+    return out << "<Unary-op " << expr.m_operator << ' ' << *expr.m_operand << '>';
+}
+
+Expression UnaryOpExpression::clone() const noexcept {
+    return Expression::unary_op(
+        Token(m_operator), 
+        std::make_unique<Expression>(m_operand->clone())
+    );
+}
+
 Expression::Expression(BinOpExpression&& bin_op) noexcept : m_data(std::move(bin_op)), m_type(ExpressionType::BIN_OP) {};
 
 Expression::Expression(OperandExpression&& operand) noexcept : m_data(std::move(operand)), m_type(ExpressionType::OPERAND) {};
@@ -98,6 +127,8 @@ const Token& Expression::get_token() const noexcept {
             return expr.m_operator;
         } else if constexpr(std::is_same_v<decltype(expr), OperandExpression>) {
             return expr.m_tok;
+        } else if constexpr(std::is_same_v<decltype(expr), UnaryOpExpression>) {
+            return expr.m_operator;
         } else {
             std::abort(); // no se puede llegar a esto, expr siempre será o BinOpExpression u OperandExpression
         }
@@ -165,6 +196,16 @@ double BinOpExpression::evaluate(const SymbolTable& symbols) const {
             throw ComplexResultError(std::make_unique<Expression>(this->clone()));
         }
         return result;
+      }
+      default: __builtin_unreachable();
+    }
+}
+
+double UnaryOpExpression::evaluate(const SymbolTable& symbols) const {
+    double arg_value = m_operand->evaluate(symbols);
+    switch(m_operator.type()) {
+      case TokenType::OP_MINUS: {
+        return -arg_value;
       }
       default: __builtin_unreachable();
     }

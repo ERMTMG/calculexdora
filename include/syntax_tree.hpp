@@ -1,6 +1,7 @@
 #pragma once
 #include "symbol_table.hpp"
 #include "tokens.hpp"
+#include <cstdint>
 #include <memory>
 #include <ostream>
 #include <utility>
@@ -10,9 +11,10 @@ namespace clex {
 
 class Expression;
 
-enum class ExpressionType : bool {
+enum class ExpressionType : uint8_t {
     OPERAND,
     BIN_OP,
+    UNARY_OP,
 };
 
 class OperandExpression {
@@ -50,21 +52,42 @@ class BinOpExpression {
 
 std::ostream& operator<<(std::ostream& out, const BinOpExpression& expr);
 
+class UnaryOpExpression {
+  private:
+    Token m_operator;
+    std::unique_ptr<Expression> m_operand;
+  public:
+    UnaryOpExpression(Token&& oper, std::unique_ptr<Expression>&& operand);
+    const Token& get_operator() const noexcept;
+    const Expression& get_operand() const noexcept;
+
+    Expression clone() const noexcept;
+    double evaluate(const SymbolTable& symbols) const;
+
+    friend class Expression;
+    friend std::ostream& operator<<(std::ostream& out, const UnaryOpExpression& expr);
+};
+
+std::ostream& operator<<(std::ostream& out, const UnaryOpExpression& expr);
+
 class Expression {
   private:
-    std::variant<BinOpExpression, OperandExpression> m_data;
+    std::variant<BinOpExpression, OperandExpression, UnaryOpExpression> m_data;
     ExpressionType m_type;  
     Expression(OperandExpression&& operand) noexcept;
     Expression(BinOpExpression&& bin_op) noexcept;
+    Expression(UnaryOpExpression&& unary_op) noexcept;
     Expression() = delete;
   public: 
     static Expression operand(Token&& tok);
     static Expression bin_op(Token&& oper, std::unique_ptr<Expression>&& lhs, std::unique_ptr<Expression>&& rhs);
+    static Expression unary_op(Token&& oper, std::unique_ptr<Expression>&& operand);
     
     ExpressionType type() const noexcept;
     const Token& get_token() const noexcept;
     const OperandExpression& as_operand() const;
     const BinOpExpression& as_bin_op() const;
+    const UnaryOpExpression& as_unary_op() const;
 
     Expression clone() const noexcept;
     double evaluate(const SymbolTable& symbols) const;
