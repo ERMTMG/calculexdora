@@ -56,29 +56,8 @@ Token::Token(TokenType type, Token::TokenVariant&& data) noexcept :
 Token::Token() : m_data(), m_type(TokenType::ERROR_TOKEN) {};
 
 Token::Token(TokenType type) : m_data(), m_type(type) {
-    static const int PLUS_MINUS_BINDING_POWER = 1;
-    static const int TIMES_DIVIDE_BINDING_POWER = 2;
-    static const int EXPONENT_BINDING_POWER = 3;
     if(type == TokenType::NUMBER || type == TokenType::IDENTIFIER) {
         throw std::invalid_argument("No token info provided for number/identifier token. Use Token::from_number() or Token::from_ident() instead");
-    } else {
-        switch (type) {
-          case TokenType::OP_PLUS:
-          case TokenType::OP_MINUS: {
-            m_data = PLUS_MINUS_BINDING_POWER;
-            break;
-          }
-          case TokenType::OP_ASTERISK:
-          case TokenType::OP_SLASH: {
-            m_data = TIMES_DIVIDE_BINDING_POWER;
-            break;
-          }
-          case TokenType::OP_CARET: {
-            m_data = EXPONENT_BINDING_POWER;
-            break;
-          }
-          default: break;
-        }
     }
 }
 
@@ -114,11 +93,30 @@ std::optional<double> Token::get_num() const noexcept {
     }
 }
 
-std::optional<int> Token::get_binding_power() const noexcept {
-    if(is_operator_token()) {
-        return std::get<int>(m_data);
-    } else {
-        return {};
+std::optional<int> Token::get_binary_binding_power() const noexcept {
+    switch(m_type) {
+      case TokenType::OP_PLUS:
+      case TokenType::OP_MINUS: {
+          return 1;
+      }
+      case TokenType::OP_ASTERISK:
+      case TokenType::OP_SLASH: {
+          return 2;
+      }
+      case TokenType::OP_CARET: {
+          return 3;
+      }
+      default: return {};
+    }
+}
+
+std::optional<int> Token::get_unary_binding_power() const noexcept {
+    switch(m_type) {
+      case TokenType::OP_PLUS:
+      case TokenType::OP_MINUS: {
+          return 5;
+      }
+      default: return {};
     }
 }
 
@@ -144,7 +142,14 @@ bool Token::operator!=(const Token& rhs) const noexcept {
     return !(*this == rhs);
 }
 
-bool Token::is_operator_token() const noexcept {
+bool Token::is_unary_operator_token() const noexcept {
+    return (
+        m_type == TokenType::OP_MINUS
+     || m_type == TokenType::OP_PLUS
+    );
+}
+
+bool Token::is_binary_operator_token() const noexcept {
     return (
         m_type == TokenType::OP_PLUS 
      || m_type == TokenType::OP_MINUS
@@ -152,6 +157,16 @@ bool Token::is_operator_token() const noexcept {
      || m_type == TokenType::OP_SLASH
      || m_type == TokenType::OP_CARET
     );
+}
+
+bool Token::is_right_associative() const noexcept {
+    return (
+        m_type == TokenType::OP_CARET
+    );
+}
+
+bool Token::is_operator_token() const noexcept {
+    return is_unary_operator_token() || is_binary_operator_token();
 }
 
 bool Token::is_operand_token() const noexcept {

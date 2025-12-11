@@ -27,7 +27,7 @@ std::ostream& operator<<(std::ostream& out, TokenType token_type) noexcept;
 
 class Token {
   public:
-    using TokenVariant = std::variant<std::monostate, std::string, double, int>;
+    using TokenVariant = std::variant<std::monostate, std::string, double>;
   private:
     TokenVariant m_data;
     TokenType m_type;
@@ -44,10 +44,14 @@ class Token {
     static Token identifier(const std::string& str) noexcept;
     std::optional<double> get_num() const noexcept;
     std::optional<std::string> get_ident() const noexcept;
-    std::optional<int> get_binding_power() const noexcept;
+    std::optional<int> get_binary_binding_power() const noexcept;
+    std::optional<int> get_unary_binding_power() const noexcept;
     TokenType type() const noexcept;
+    bool is_unary_operator_token() const noexcept;
+    bool is_binary_operator_token() const noexcept;
     bool is_operator_token() const noexcept;
     bool is_operand_token() const noexcept;
+    bool is_right_associative() const noexcept;
     bool operator==(const Token& rhs) const noexcept;
     bool operator!=(const Token& rhs) const noexcept;
     friend std::ostream& operator<<(std::ostream& out, const Token& tok) noexcept;
