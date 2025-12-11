@@ -99,12 +99,23 @@ Expression::Expression(BinOpExpression&& bin_op) noexcept : m_data(std::move(bin
 
 Expression::Expression(OperandExpression&& operand) noexcept : m_data(std::move(operand)), m_type(ExpressionType::OPERAND) {};
 
-Expression Expression::bin_op(Token &&oper, std::unique_ptr<Expression> &&lhs, std::unique_ptr<Expression> &&rhs) {
+Expression::Expression(UnaryOpExpression&& unary_op) noexcept : m_data(std::move(unary_op)), m_type(ExpressionType::UNARY_OP) {};
+
+Expression Expression::bin_op(Token&& oper, std::unique_ptr<Expression>&& lhs, std::unique_ptr<Expression>&& rhs) {
     return Expression(
         BinOpExpression(
             std::move(oper),
             std::move(lhs),
             std::move(rhs)
+        )
+    );
+}
+
+Expression Expression::unary_op(Token&& oper, std::unique_ptr<Expression>&& operand) {
+    return Expression(
+        UnaryOpExpression(
+            std::move(oper),
+            std::move(operand)
         )
     );
 }
