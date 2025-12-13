@@ -218,6 +218,46 @@ double UnaryOpExpression::evaluate(const SymbolTable& symbols) const {
       case TokenType::OP_MINUS: {
         return -arg_value;
       }
+      case TokenType::OP_PLUS: {
+        return arg_value;
+      }
+      case TokenType::OP_FUNC_SQRT: {
+        if(arg_value < 0.0) {
+            throw ComplexResultError(std::make_unique<Expression>(this->clone()));
+        }
+        return std::sqrt(arg_value);
+      }
+      case TokenType::OP_FUNC_LOG: {
+        if(arg_value <= 0.0) {
+            throw ComplexResultError(std::make_unique<Expression>(this->clone()));
+        }
+        return std::log(arg_value);
+      }
+      case TokenType::OP_FUNC_SIN: {
+        return std::sin(arg_value);
+      }
+      case TokenType::OP_FUNC_COS: {
+        return std::cos(arg_value);
+      }
+      case TokenType::OP_FUNC_TAN: {
+        return std::tan(arg_value); // std::tan no devuelve infinito ni NaN para valores fuera del dominio 
+                                    // así que tampoco podemos hacer mucho para comprobar errores aquí
+      }
+      case TokenType::OP_FUNC_ARCSIN: {
+        if(arg_value < -1.0 || arg_value > 1.0) {
+            throw ComplexResultError(std::make_unique<Expression>(this->clone()));
+        }
+        return std::asin(arg_value);
+      }
+      case TokenType::OP_FUNC_ARCCOS: {
+        if(arg_value < -1.0 || arg_value > 1.0) {
+            throw ComplexResultError(std::make_unique<Expression>(this->clone()));
+        }
+        return std::acos(arg_value);
+      }
+      case TokenType::OP_FUNC_ARCTAN: {
+        return std::atan(arg_value);
+      }
       default: __builtin_unreachable();
     }
 }

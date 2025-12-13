@@ -11,16 +11,24 @@ enum class TokenType {
     ERROR_TOKEN = -1,
     END_OF_FILE,
     NEWLINE,
-    NUMBER,      // 0123456789
-    IDENTIFIER,  // nombre de variable
-    OP_PLUS,     // "+"
-    OP_MINUS,    // "-"
-    OP_ASTERISK, // "*"
-    OP_SLASH,    // "/"
-    OP_CARET,    // "^"
-    ASSIGN,      // "="  
-    PAREN_L,     // "("
-    PAREN_R,     // ")"
+    NUMBER,         // 0123456789
+    IDENTIFIER,     // nombre de variable
+    OP_PLUS,        // "+"
+    OP_MINUS,       // "-"
+    OP_ASTERISK,    // "*"
+    OP_SLASH,       // "/"
+    OP_CARET,       // "^"
+    OP_FUNC_SQRT,   // "sqrt"
+    OP_FUNC_LOG,    // "log"
+    OP_FUNC_SIN,    // "sin"
+    OP_FUNC_COS,    // "cos"
+    OP_FUNC_TAN,    // "tan"
+    OP_FUNC_ARCSIN, // "arcsin"
+    OP_FUNC_ARCCOS, // "arccos"
+    OP_FUNC_ARCTAN, // "arctan"
+    ASSIGN,         // "="  
+    PAREN_L,        // "("
+    PAREN_R,        // ")"
 };
 
 std::ostream& operator<<(std::ostream& out, TokenType token_type) noexcept;

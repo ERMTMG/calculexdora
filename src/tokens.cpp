@@ -115,6 +115,15 @@ std::optional<int> Token::get_unary_binding_power() const noexcept {
       case TokenType::OP_PLUS:
       case TokenType::OP_MINUS: {
           return 5;
+      case TokenType::OP_FUNC_SQRT:
+      case TokenType::OP_FUNC_LOG:
+      case TokenType::OP_FUNC_SIN:
+      case TokenType::OP_FUNC_COS:
+      case TokenType::OP_FUNC_TAN:
+      case TokenType::OP_FUNC_ARCSIN:
+      case TokenType::OP_FUNC_ARCCOS:
+      case TokenType::OP_FUNC_ARCTAN:
+        return 4;
       }
       default: return {};
     }
@@ -146,16 +155,13 @@ bool Token::is_unary_operator_token() const noexcept {
     return (
         m_type == TokenType::OP_MINUS
      || m_type == TokenType::OP_PLUS
+     || (m_type >= TokenType::OP_FUNC_SQRT && m_type >= TokenType::OP_FUNC_ARCTAN)
     );
 }
 
 bool Token::is_binary_operator_token() const noexcept {
     return (
-        m_type == TokenType::OP_PLUS 
-     || m_type == TokenType::OP_MINUS
-     || m_type == TokenType::OP_ASTERISK
-     || m_type == TokenType::OP_SLASH
-     || m_type == TokenType::OP_CARET
+        m_type >= TokenType::OP_PLUS && m_type <= TokenType::OP_CARET
     );
 }
 
