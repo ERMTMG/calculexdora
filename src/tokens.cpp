@@ -44,8 +44,32 @@ std::ostream& operator<<(std::ostream& out, TokenType token_type) noexcept {
       case TokenType::PAREN_R: {
         return out << "Right Parenthesis (')')";
       }
+      case TokenType::OP_FUNC_SQRT: {
+        return out << "Sqrt function";
+      }
+      case TokenType::OP_FUNC_LOG: {
+        return out << "Log function";
+      }
+      case TokenType::OP_FUNC_SIN: {
+        return out << "Sin function";
+      }
+      case TokenType::OP_FUNC_COS: {
+        return out << "Cos function";
+      }
+      case TokenType::OP_FUNC_TAN: {
+        return out << "Tan function";
+      }
+      case TokenType::OP_FUNC_ARCSIN: {
+        return out << "Arcsin function";
+      }
+      case TokenType::OP_FUNC_ARCCOS: {
+        return out << "Arccos function";
+      }
+      case TokenType::OP_FUNC_ARCTAN: {
+        return out << "Arctan function";
+      }
       default: {
-        return out << "<Invalid token type>";
+        return out << "<Invalid token type (num " << static_cast<int>(token_type) << ")>";
       }
     }
 }
@@ -155,7 +179,7 @@ bool Token::is_unary_operator_token() const noexcept {
     return (
         m_type == TokenType::OP_MINUS
      || m_type == TokenType::OP_PLUS
-     || (m_type >= TokenType::OP_FUNC_SQRT && m_type >= TokenType::OP_FUNC_ARCTAN)
+     || (m_type >= TokenType::OP_FUNC_SQRT && m_type <= TokenType::OP_FUNC_ARCTAN)
     );
 }
 
@@ -217,8 +241,32 @@ std::ostream& operator<<(std::ostream& out, const Token& tok) noexcept {
       case TokenType::PAREN_R: {
         return out << "<Right Parenthesis>";
       }
+      case TokenType::OP_FUNC_SQRT: {
+        return out << "<Sqrt>";
+      }
+      case TokenType::OP_FUNC_LOG: {
+        return out << "<Log>";
+      }
+      case TokenType::OP_FUNC_SIN: {
+        return out << "<Sin>";
+      }
+      case TokenType::OP_FUNC_COS: {
+        return out << "<Cos>";
+      }
+      case TokenType::OP_FUNC_TAN: {
+        return out << "<Tan>";
+      }
+      case TokenType::OP_FUNC_ARCSIN: {
+        return out << "<Arcsin>";
+      }
+      case TokenType::OP_FUNC_ARCCOS: {
+        return out << "<Arccos>";
+      }
+      case TokenType::OP_FUNC_ARCTAN: {
+        return out << "<Arctan>";
+      }
       default: {
-        return out << "<Invalid token type>";
+        return out << "<Invalid token type (num " << static_cast<int>(tok.m_type) << ")>";
       }
     }
 }

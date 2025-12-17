@@ -37,13 +37,16 @@ class Test {
         std::cout << ">>> EJECUTANDO TEST: " << m_name << '\n';
         std::cout << ">>> ENTRADA: `" << m_input << "`\n";
         auto toks = clex::tokenize(m_input);
+        std::cout << ">>> TOKENS DETECTADOS: \n"; 
         for(const clex::Token& tok : toks) {
+            std::cout << tok << ' ';
             if(tok.type() == clex::TokenType::ERROR_TOKEN) {
                 std::cerr << "\tERROR LÉXICO DETECTADO\n"
                           << "\tSe ha detectado un token de error. Deteniendo ejecución del test.\n";
                 return;
             }
         }
+        std::cout << '\n';
         auto parser = clex::Parser(std::move(toks));
         std::optional<clex::Statement> stmt;
         try {
@@ -130,6 +133,11 @@ int main(int argc, char** argv) {
             "Operadores unarios",
             "+-(2 - -2)*+3",
             -12
+        },
+        Test {
+            "Funciones",
+            "sqrt(2) + log(2.7182818284)",
+            3
         },
         Test {
             "Error 1: Tokens inválidos",
