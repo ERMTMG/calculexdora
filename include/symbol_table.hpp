@@ -11,7 +11,7 @@ class SymbolTable {
   private:  
     std::unordered_map<std::string, double> m_vars;
   public:
-    SymbolTable() = default;
+    SymbolTable();
     SymbolTable(const SymbolTable&) = default;
     SymbolTable(SymbolTable&&) = default;
 

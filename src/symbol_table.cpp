@@ -5,8 +5,17 @@
 
 namespace clex {
 
+SymbolTable::SymbolTable() : m_vars { // Constructor por defecto que incluye valores para constantes utilizadas
+    {"pi", 3.14159265358979323846},
+    {"euler", 2.71828182845904523536},
+    {"phi", 1.61803398874989484820},
+    {"eulerMascheroni", 0.57721566490153286060},
+} {};
+
 SymbolTable SymbolTable::from_map(std::unordered_map<std::string, double>&& map) {
     SymbolTable output;
+    map.merge(output.m_vars); // hacemos un merge de las variables declaradas con las constantes predefinidas 
+                              // (manteniendo prioridad de las variables declaradas, por si, por ejemplo, `pi` tiene otro valor)
     output.m_vars = std::move(map);
     return output;
 }
