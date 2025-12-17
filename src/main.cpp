@@ -4,7 +4,8 @@
 #include "tokens.hpp"
 #include "parser.hpp"
 #include "symbol_table.hpp"
-
+#include "parser_errors.hpp"
+#include "eval_errors.hpp"
 namespace clex {
     std::vector<Token> tokenize(const std::string& input);
 }
@@ -47,8 +48,17 @@ int main() {
                 std::cout << "Variable '" << *assign.get_var().get_ident() << "' guardada correctamente.\n";
             }
 
-        } catch (const std::exception& e) {
+        } catch (const clex::ParserError& e) {
 
+            std::cerr << "ERROR DE SINTAXIS: " << e.what() << "\n";
+            e.print_to(std::cerr);
+            std::cerr << "\n";
+        
+        } catch (const clex::EvalError& e){
+            std:: cerr << "ERROR DE EVALUACIÓN: ";
+            e.print_to(std::cerr);
+            std::cerr << "\n";
+        } catch (const std::exception e){
             std::cerr << "ERROR: " << e.what() << "\n";
         }
     }

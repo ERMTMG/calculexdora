@@ -27,6 +27,14 @@ WS       [ \t\r]+
 "="         { return Token(TokenType::ASSIGN); }
 "("         { return Token(TokenType::PAREN_L); }
 ")"         { return Token(TokenType::PAREN_R); }
+"sqrt"      { return Token(TokenType::OP_FUNC_SQRT); }
+"log"       { return Token(TokenType::OP_FUNC_LOG); }
+"sin"       { return Token(TokenType::OP_FUNC_SIN); }
+"cos"       { return Token(TokenType::OP_FUNC_COS); }
+"tan"       { return Token(TokenType::OP_FUNC_TAN); }
+"asin"      { return Token(TokenType::OP_FUNC_ARCSIN); }
+"acos"      { return Token(TokenType::OP_FUNC_ARCCOS); }
+"atan"      { return Token(TokenType::OP_FUNC_ARCTAN); }
 {NUMBER}    { return Token::number(std::string(yytext)); }
 {ID}        { return Token::identifier(std::string(yytext)); }
 .           { std::cerr << "Error: " << yytext << std::endl; return Token(); }
