@@ -37,7 +37,7 @@ void SymbolTable::set(const Token& ident, double value) noexcept {
 }
 
 void SymbolTable::reset() noexcept {
-    m_vars.clear();
+    m_vars = std::move(SymbolTable().m_vars); // resetea las variables a ser las constantes normales
 }
 
 }
