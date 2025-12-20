@@ -15,7 +15,7 @@ class SymbolTable {
     SymbolTable(const SymbolTable&) = default;
     SymbolTable(SymbolTable&&) = default;
 
-    static SymbolTable from_map(std::unordered_map<std::string, double>&& map);
+    static SymbolTable from_map(std::unordered_map<std::string, double>&& map) noexcept;
 
     std::optional<double> get(const Token& ident) const noexcept;
     void set(const Token& ident, double value) noexcept;

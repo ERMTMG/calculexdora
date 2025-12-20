@@ -12,7 +12,7 @@ SymbolTable::SymbolTable() : m_vars { // Constructor por defecto que incluye val
     {"eulerMascheroni", 0.57721566490153286060},
 } {};
 
-SymbolTable SymbolTable::from_map(std::unordered_map<std::string, double>&& map) {
+SymbolTable SymbolTable::from_map(std::unordered_map<std::string, double>&& map) noexcept {
     SymbolTable output;
     map.merge(output.m_vars); // hacemos un merge de las variables declaradas con las constantes predefinidas 
                               // (manteniendo prioridad de las variables declaradas, por si, por ejemplo, `pi` tiene otro valor)
