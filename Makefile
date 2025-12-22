@@ -18,10 +18,10 @@ MAIN := bin/calculexdora
 
 
 # Default rule
-all: $(TESTS) $(MAIN)
+all: setup $(TESTS) $(MAIN)
 
-tests: $(TESTS)
-main: $(MAIN)
+tests: setup $(TESTS)
+main: setup $(MAIN)
 
 # Link
 $(TESTS): $(CLEX_OBJS) obj/tests.o
@@ -41,6 +41,9 @@ clean:
 # Optional: run program
 run: $(MAIN)
 	./$(MAIN)
+
+setup:
+	mkdir -p bin/ obj/
 
 .PHONY: all clean run
 
