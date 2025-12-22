@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
         },
         Test {
             "Funciones",
-            "sqrt(2) + log(2.7182818284)",
+            "sqrt(4) + log(2.7182818284)",
             3
         },
         Test {
@@ -159,7 +159,7 @@ int main(int argc, char** argv) {
         },
         Test {
             "Error 5: Resultado no real",
-            "i = (0 - 1) ^ 0.5"
+            "i = (-1) ^ 0.5"
         }
     };
     
