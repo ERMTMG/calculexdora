@@ -54,7 +54,7 @@ int main() {
 
         } catch (const clex::ParserError& e) {
 
-            std::cerr << "ERROR DE SINTAXIS: " << e.what() << "\n";
+            std::cerr << "ERROR DE SINTAXIS: ";
             e.print_to(std::cerr);
             std::cerr << "\n";
         
