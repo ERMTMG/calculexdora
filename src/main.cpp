@@ -1,3 +1,4 @@
+#include <cctype>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -22,12 +23,15 @@ int main() {
     while (true) {
         std::cout << "\nIntroduce la sentencia > ";
         
-        if (!std::getline(std::cin, input_line)) {
+        if(!std::getline(std::cin, input_line)) {
             break;
         }
 
-        if (input_line.empty()) continue; //SI ES VACÍA SE VUELVE A REPETIR
-
+        if(input_line.empty()) continue; //SI ES VACÍA SE VUELVE A REPETIR
+        if(input_line == "exit" || input_line == "quit") {
+            std::cout << "Saliendo...\n";
+            break;
+        }
         try {
             //SENTENCIA A TOKENS
             std::vector<clex::Token> tokens = clex::tokenize(input_line);
